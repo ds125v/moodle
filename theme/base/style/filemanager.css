@@ -2,7 +2,7 @@
  * File Picker and File Manager
  */
 
-.filemanager, .file-picker {font-size:11px;color: #555555;letter-spacing: .2px;}
+.filemanager, .filepicker, .file-picker {font-size:11px;color: #555555;letter-spacing: .2px;}
 .filemanager a, .file-picker a {color:#555555;}
 .filemanager a:hover, .file-picker a:hover {color:#555555;text-decoration: none;}
 .filemanager select, .filemanager input, .filemanager button, .filemanager textarea,

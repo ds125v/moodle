@@ -2245,6 +2245,7 @@ class core_renderer extends renderer_base {
             $buttonname = '';
         }
         $html = <<<EOD
+<div class="filepicker">
 <div class="filemanager-loading mdl-align" id='filepicker-loading-{$client_id}'>
 $icon_progress
 </div>
@@ -2265,7 +2266,7 @@ EOD;
     </div>
 EOD;
         }
-        $html .= '</div>';
+        $html .= '</div></div>';
         return $html;
     }
 
