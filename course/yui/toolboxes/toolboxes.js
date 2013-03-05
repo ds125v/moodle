@@ -343,7 +343,7 @@ YUI.add('moodle-course-toolboxes', function(Y) {
             // Create confirm string (different if element has or does not have name)
             var confirmstring = '';
             var plugindata = {
-                type : M.util.get_string('pluginname', element.getAttribute('class').match(/modtype_([^\s]*)/)[1])
+                type : M.util.get_string('pluginname', element.getAttribute('class').match(/mod_([^\s]*)/)[1])
             }
             if (this.get_instance_name(element) != null) {
                 plugindata.name = this.get_instance_name(element)

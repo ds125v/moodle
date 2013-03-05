@@ -5051,7 +5051,7 @@ $.widget( "mobile.listview", $.mobile.widget, {
 
 				// Moodle Hack to nicely display the activities on the course page.
 				// Activities <a> is not a children, we need to find it.
-				if (item.hasClass( "activity" ) && (!item.hasClass( "label" ))) {
+				if (item.hasClass( "activity" ) && (!item.hasClass( "mod_label" ))) {
 					a = item.find( "a" );
 				} else {
 					a = this._getChildrenByTagName( item[ 0 ], "a", "A" );

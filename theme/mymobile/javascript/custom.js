@@ -61,7 +61,7 @@ $(document).ready(function() {
         });
 
         //calendar and other links that need to be external
-        $('.maincalendar .filters a, li.activity.scorm a, div.files a, #page-user-filesPAGE li div a, .maincalendar .bottom a, .section li.url.modtype_url a, .resourcecontent .resourcemediaplugin a, #underfooter .noajax a, .block_mnet_hosts .content a, .block_private_files .content a, a.portfolio-add-link, #attempts td a').attr("data-ajax", "false");
+        $('.maincalendar .filters a, li.activity.mod_scorm a, div.files a, #page-user-filesPAGE li div a, .maincalendar .bottom a, .section li.url.modtype_url a, .resourcecontent .resourcemediaplugin a, #underfooter .noajax a, .block_mnet_hosts .content a, .block_private_files .content a, a.portfolio-add-link, #attempts td a').attr("data-ajax", "false");
 
         //add blank to open in window for some
         $('#page-mod-url-viewPAGE div.urlworkaround a, #page-mod-resource-viewPAGE div.resourceworkaround a, .mediaplugin a.mediafallbacklink, #page-mod-resource-viewPAGE .resourcemp3 a, .foldertree li a').attr("target", "_blank").attr("data-role", "button").attr("data-icon", "plus");
@@ -262,7 +262,7 @@ $(document).ready(function() {
         $('.forumpost div.author a').removeAttr('data-role');
         //$('.questionflagimage2').removeClass("ui-btn-hidden");a#notificationyes
         //image replacement
-        $(this).find(".ithumb .course-content .summary img, .ithumb .course-content .activity.label img, .ithumb .sitetopic .no-overflow img").click(function() {
+        $(this).find(".ithumb .course-content .summary img, .ithumb .course-content .activity.mod_label img, .ithumb .sitetopic .no-overflow img").click(function() {
             var turl = $(this).attr("src");
             window.open(turl);
         });

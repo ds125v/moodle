@@ -451,7 +451,7 @@ M.course_dndupload = {
             progress: document.createElement('span')
         };
 
-        resel.li.className = 'activity ' + module + ' modtype_' + module;
+        resel.li.className = 'activity mod_' + module;
 
         resel.indentdiv.className = 'mod-indent';
         resel.li.appendChild(resel.indentdiv);
