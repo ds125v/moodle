@@ -163,7 +163,7 @@ class theme_bootstrap_core_renderer extends core_renderer {
     }
 
     protected function render_pix_icon(pix_icon $icon) {
-        if (self::replace_moodle_icon($icon->pix) !== false) {
+        if (self::replace_moodle_icon($icon->pix) !== false && $icon->attributes['alt'] === '' && $icon->attributes['title'] === '') {
             return self::replace_moodle_icon($icon->pix);
         } else {
             return parent::render_pix_icon($icon);
@@ -176,40 +176,26 @@ class theme_bootstrap_core_renderer extends core_renderer {
             'chapter' => 'file',
             'docs' => 'question-sign',
             'generate' => 'gift',
-            'i/backup' => 'cog',
+            'i/backup' => 'upload-alt',
             'i/checkpermissions' => 'user',
             'i/edit' => 'pencil',
             'i/filter' => 'filter',
-            'i/grades' => 'grades',
-            'i/group' => 'user',
+            'i/grades' => 'table',
+            'i/group' => 'group',
             'i/hide' => 'eye-open',
+            'i/import' => 'download-alt',
             'i/move_2d' => 'move',
             'i/navigationitem' => 'sign-blank',
-            'i/publish' => 'publish',
+            'i/publish' => 'globe',
             'i/reload' => 'refresh',
             'i/report' => 'list-alt',
-            'i/restore' => 'cog',
+            'i/restore' => 'download-alt',
             'i/return' => 'repeat',
             'i/roles' => 'user',
             'i/settings' => 'cog',
             'i/show' => 'eye-close',
             'i/user' => 'user',
             'i/users' => 'user',
-            'spacer' => 'spacer',
-            't/add' => 'plus',
-            't/copy' => 'copy', // Only in font awesome.
-            't/delete' => 'remove',
-            't/down' => 'arrow-down',
-            't/edit' => 'edit',
-            't/editstring' => 'tag',
-            't/hide' => 'eye-open',
-            't/left' => 'arrow-left',
-            't/move' => 'resize-vertical',
-            't/right' => 'arrow-right',
-            't/show' => 'eye-close',
-            't/switch_minus' => 'minus-sign',
-            't/switch_plus' => 'plus-sign',
-            't/up' => 'arrow-up',
         );
         if (isset($icons[$name])) {
             return "<i class=\"icon-$icons[$name]\"></i>";
