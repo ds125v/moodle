@@ -1462,8 +1462,7 @@ function question_extend_settings_navigation(navigation_node $navigationnode, $c
         $params['cat'] = $cat;
     }
 
-    $questionnode = $navigationnode->add(get_string('questionbank', 'question'),
-            new moodle_url('/question/edit.php', $params), navigation_node::TYPE_CONTAINER);
+    $questionnode = $navigationnode->add(get_string('questionbank', 'question'), null, navigation_node::TYPE_CONTAINER);
 
     $contexts = new question_edit_contexts($context);
     if ($contexts->have_one_edit_tab_cap('questions')) {
