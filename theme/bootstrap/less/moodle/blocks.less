@@ -161,14 +161,38 @@ ul.block_tree ul {
 
 .block_tree .tree_item.branch a:before,
 .block_tree .tree_item.branch span:before {
-    content: "▼ ";
+    font-family: FontAwesome;
+    font-weight: normal;
+    font-style: normal;
+    text-decoration: inherit;
+    -webkit-font-smoothing: antialiased;
+    content: "\f0d7";
+    content: "\f078";
+    padding-right: 0.35em;
+    color: #999;
+}
+
+.block_tree .tree_item [class^="icon-"] {
+    color: #999;
+}
+.block_tree .active_tree_node [class^="icon-"] {
+    color: inherit;
+}
+
+.block_tree .tree_item .icon-sign-blank {
+    font-size: .5em;
+    padding-right: .7em;
+    vertical-align: middle;
 }
 
 .block_tree .collapsed  .tree_item.branch a:before,
 .block_tree .collapsed  .tree_item.branch span:before,
 .block_tree .collapsed  .tree_item.emptybranch a:before,
 .block_tree .collapsed  .tree_item.emptybranch span:before {
-    content: "► ";
+    content: "\f0da";
+    content: "\f054";
+    padding-right: 0.4em;
+    padding-left: 0.2em;
 }
 
 .dir-rtl {
