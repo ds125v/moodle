@@ -199,6 +199,7 @@ if ($hasfootnote) { ?>
     <?php
 } ?>
 
+    <?php echo $OUTPUT->login_info(); ?>
     <?php echo $OUTPUT->standard_footer_html(); ?>
 </footer>
 
