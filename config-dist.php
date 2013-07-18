@@ -111,9 +111,11 @@ $CFG->directorypermissions = 02777;
 //=========================================================================
 // A very few webhosts use /admin as a special URL for you to access a
 // control panel or something.  Unfortunately this conflicts with the
-// standard location for the Moodle admin pages.  You can fix this by
-// renaming the admin directory in your installation, and putting that
-// new name here.  eg "moodleadmin".  This will fix admin links in Moodle.
+// standard location for the Moodle admin pages.  You can work around this
+// by renaming the admin directory in your installation, and putting that
+// new name here.  eg "moodleadmin".  This should fix all admin links in Moodle.
+// After any change you need to visit your new admin directory
+// and purge all caches.
 
 $CFG->admin = 'admin';
 
@@ -520,6 +522,10 @@ $CFG->admin = 'admin';
 // Example:
 //   $CFG->forced_plugin_settings = array('pluginname'  => array('settingname' => 'value', 'secondsetting' => 'othervalue'),
 //                                        'otherplugin' => array('mysetting' => 'myvalue', 'thesetting' => 'thevalue'));
+// Module default settings with advanced/locked checkboxes can be set too. To do this, add
+// an extra config with '_adv' or '_locked' as a suffix and set the value to true or false.
+// Example:
+//   $CFG->forced_plugin_settings = array('pluginname'  => array('settingname' => 'value', 'settingname_locked' => true, 'settingname_adv' => true));
 //
 //=========================================================================
 // 9. PHPUNIT SUPPORT

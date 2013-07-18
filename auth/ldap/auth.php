@@ -61,6 +61,15 @@ if (!defined('AUTH_NTLM_VALID_DOMAINNAME')) {
 if (!defined('AUTH_NTLM_DEFAULT_FORMAT')) {
     define('AUTH_NTLM_DEFAULT_FORMAT', '%domain%\\%username%');
 }
+if (!defined('AUTH_NTLM_FASTPATH_ATTEMPT')) {
+    define('AUTH_NTLM_FASTPATH_ATTEMPT', 0);
+}
+if (!defined('AUTH_NTLM_FASTPATH_YESFORM')) {
+    define('AUTH_NTLM_FASTPATH_YESFORM', 1);
+}
+if (!defined('AUTH_NTLM_FASTPATH_YESATTEMPT')) {
+    define('AUTH_NTLM_FASTPATH_YESATTEMPT', 2);
+}
 
 // Allows us to retrieve a diagnostic message in case of LDAP operation error
 if (!defined('LDAP_OPT_DIAGNOSTIC_MESSAGE')) {
@@ -747,39 +756,57 @@ class auth_plugin_ldap extends auth_plugin_base {
 /// User removal
         // Find users in DB that aren't in ldap -- to be removed!
         // this is still not as scalable (but how often do we mass delete?)
-        if ($this->config->removeuser != AUTH_REMOVEUSER_KEEP) {
-            $sql = 'SELECT u.*
+
+        if ($this->config->removeuser == AUTH_REMOVEUSER_FULLDELETE) {
+            $sql = "SELECT u.*
                       FROM {user} u
-                      LEFT JOIN {tmp_extuser} e ON (u.username = e.username AND u.mnethostid = e.mnethostid)
-                     WHERE u.auth = ?
+                 LEFT JOIN {tmp_extuser} e ON (u.username = e.username AND u.mnethostid = e.mnethostid)
+                     WHERE u.auth = :auth
                            AND u.deleted = 0
-                           AND e.username IS NULL';
-            $remove_users = $DB->get_records_sql($sql, array($this->authtype));
+                           AND e.username IS NULL";
+            $remove_users = $DB->get_records_sql($sql, array('auth'=>$this->authtype));
 
             if (!empty($remove_users)) {
                 print_string('userentriestoremove', 'auth_ldap', count($remove_users));
-
                 foreach ($remove_users as $user) {
-                    if ($this->config->removeuser == AUTH_REMOVEUSER_FULLDELETE) {
-                        if (delete_user($user)) {
-                            echo "\t"; print_string('auth_dbdeleteuser', 'auth_db', array('name'=>$user->username, 'id'=>$user->id)); echo "\n";
-                        } else {
-                            echo "\t"; print_string('auth_dbdeleteusererror', 'auth_db', $user->username); echo "\n";
-                        }
-                    } else if ($this->config->removeuser == AUTH_REMOVEUSER_SUSPEND) {
-                        $updateuser = new stdClass();
-                        $updateuser->id = $user->id;
-                        $updateuser->auth = 'nologin';
-                        $DB->update_record('user', $updateuser);
-                        echo "\t"; print_string('auth_dbsuspenduser', 'auth_db', array('name'=>$user->username, 'id'=>$user->id)); echo "\n";
-                        $euser = $DB->get_record('user', array('id' => $user->id));
-                        events_trigger('user_updated', $euser);
+                    if (delete_user($user)) {
+                        echo "\t"; print_string('auth_dbdeleteuser', 'auth_db', array('name'=>$user->username, 'id'=>$user->id)); echo "\n";
+                    } else {
+                        echo "\t"; print_string('auth_dbdeleteusererror', 'auth_db', $user->username); echo "\n";
                     }
                 }
             } else {
                 print_string('nouserentriestoremove', 'auth_ldap');
             }
-            unset($remove_users); // free mem!
+            unset($remove_users); // Free mem!
+
+        } else if ($this->config->removeuser == AUTH_REMOVEUSER_SUSPEND) {
+            $sql = "SELECT u.*
+                      FROM {user} u
+                 LEFT JOIN {tmp_extuser} e ON (u.username = e.username AND u.mnethostid = e.mnethostid)
+                     WHERE u.auth = :auth
+                           AND u.deleted = 0
+                           AND u.suspended = 0
+                           AND e.username IS NULL";
+            $remove_users = $DB->get_records_sql($sql, array('auth'=>$this->authtype));
+
+            if (!empty($remove_users)) {
+                print_string('userentriestoremove', 'auth_ldap', count($remove_users));
+
+                foreach ($remove_users as $user) {
+                    $updateuser = new stdClass();
+                    $updateuser->id = $user->id;
+                    $updateuser->suspended = 1;
+                    $DB->update_record('user', $updateuser);
+                    echo "\t"; print_string('auth_dbsuspenduser', 'auth_db', array('name'=>$user->username, 'id'=>$user->id)); echo "\n";
+                    $euser = $DB->get_record('user', array('id' => $user->id));
+                    events_trigger('user_updated', $euser);
+                    session_kill_user($user->id);
+                }
+            } else {
+                print_string('nouserentriestoremove', 'auth_ldap');
+            }
+            unset($remove_users); // Free mem!
         }
 
 /// Revive suspended users
@@ -787,8 +814,9 @@ class auth_plugin_ldap extends auth_plugin_base {
             $sql = "SELECT u.id, u.username
                       FROM {user} u
                       JOIN {tmp_extuser} e ON (u.username = e.username AND u.mnethostid = e.mnethostid)
-                     WHERE u.auth = 'nologin' AND u.deleted = 0";
-            $revive_users = $DB->get_records_sql($sql);
+                     WHERE (u.auth = 'nologin' OR (u.auth = ? AND u.suspended = 1)) AND u.deleted = 0";
+            // Note: 'nologin' is there for backwards compatibility.
+            $revive_users = $DB->get_records_sql($sql, array($this->authtype));
 
             if (!empty($revive_users)) {
                 print_string('userentriestorevive', 'auth_ldap', count($revive_users));
@@ -797,6 +825,7 @@ class auth_plugin_ldap extends auth_plugin_base {
                     $updateuser = new stdClass();
                     $updateuser->id = $user->id;
                     $updateuser->auth = $this->authtype;
+                    $updateuser->suspended = 0;
                     $DB->update_record('user', $updateuser);
                     echo "\t"; print_string('auth_dbreviveduser', 'auth_db', array('name'=>$user->username, 'id'=>$user->id)); echo "\n";
                     $euser = $DB->get_record('user', array('id' => $user->id));
@@ -914,7 +943,7 @@ class auth_plugin_ldap extends auth_plugin_base {
 
                 $id = $DB->insert_record('user', $user);
                 echo "\t"; print_string('auth_dbinsertuser', 'auth_db', array('name'=>$user->username, 'id'=>$id)); echo "\n";
-                $euser = $DB->get_record('user', array('id' => $user->id));
+                $euser = $DB->get_record('user', array('id' => $id));
                 events_trigger('user_created', $euser);
                 if (!empty($this->config->forcechangepassword)) {
                     set_user_preference('auth_forcepasswordchange', 1, $id);
@@ -1160,11 +1189,19 @@ class auth_plugin_ldap extends auth_plugin_base {
             $user_entry = array_change_key_case($user_entry[0], CASE_LOWER);
 
             foreach ($attrmap as $key => $ldapkeys) {
+                $profilefield = '';
                 // Only process if the moodle field ($key) has changed and we
                 // are set to update LDAP with it
+                $customprofilefield = 'profile_field_' . $key;
                 if (isset($olduser->$key) and isset($newuser->$key)
-                  and $olduser->$key !== $newuser->$key
-                  and !empty($this->config->{'field_updateremote_'. $key})) {
+                    and ($olduser->$key !== $newuser->$key)) {
+                    $profilefield = $key;
+                } else if (isset($olduser->$customprofilefield) && isset($newuser->$customprofilefield)
+                    && $olduser->$customprofilefield !== $newuser->$customprofilefield) {
+                    $profilefield = $customprofilefield;
+                }
+
+                if (!empty($profilefield) && !empty($this->config->{'field_updateremote_' . $key})) {
                     // For ldap values that could be in more than one
                     // ldap key, we will do our best to match
                     // where they came from
@@ -1177,9 +1214,9 @@ class auth_plugin_ldap extends auth_plugin_base {
                         $ambiguous = false;
                     }
 
-                    $nuvalue = textlib::convert($newuser->$key, 'utf-8', $this->config->ldapencoding);
+                    $nuvalue = textlib::convert($newuser->$profilefield, 'utf-8', $this->config->ldapencoding);
                     empty($nuvalue) ? $nuvalue = array() : $nuvalue;
-                    $ouvalue = textlib::convert($olduser->$key, 'utf-8', $this->config->ldapencoding);
+                    $ouvalue = textlib::convert($olduser->$profilefield, 'utf-8', $this->config->ldapencoding);
 
                     foreach ($ldapkeys as $ldapkey) {
                         $ldapkey   = $ldapkey;
@@ -1442,7 +1479,15 @@ class auth_plugin_ldap extends auth_plugin_base {
 
     function ldap_attributes () {
         $moodleattributes = array();
-        foreach ($this->userfields as $field) {
+        // If we have custom fields then merge them with user fields.
+        $customfields = $this->get_custom_user_profile_fields();
+        if (!empty($customfields) && !empty($this->userfields)) {
+            $userfields = array_merge($this->userfields, $customfields);
+        } else {
+            $userfields = $this->userfields;
+        }
+
+        foreach ($userfields as $field) {
             if (!empty($this->config->{"field_map_$field"})) {
                 $moodleattributes[$field] = textlib::strtolower(trim($this->config->{"field_map_$field"}));
                 if (preg_match('/,/', $moodleattributes[$field])) {
@@ -1590,17 +1635,17 @@ class auth_plugin_ldap extends auth_plugin_base {
             }
 
             // Now start the whole NTLM machinery.
-            if(!empty($this->config->ntlmsso_ie_fastpath)) {
-                // Shortcut for IE browsers: skip the attempt page
+            if($this->config->ntlmsso_ie_fastpath == AUTH_NTLM_FASTPATH_YESATTEMPT ||
+                $this->config->ntlmsso_ie_fastpath == AUTH_NTLM_FASTPATH_YESFORM) {
+
                 if(check_browser_version('MSIE')) {
                     $sesskey = sesskey();
                     redirect($CFG->wwwroot.'/auth/ldap/ntlmsso_magic.php?sesskey='.$sesskey);
-                } else {
+                } else if ($this->config->ntlmsso_ie_fastpath == AUTH_NTLM_FASTPATH_YESFORM) {
                     redirect($CFG->httpswwwroot.'/login/index.php?authldap_skipntlmsso=1');
                 }
-            } else {
-                redirect($CFG->wwwroot.'/auth/ldap/ntlmsso_attempt.php');
             }
+            redirect($CFG->wwwroot.'/auth/ldap/ntlmsso_attempt.php');
         }
 
         // No NTLM SSO, Use the normal login page instead.

@@ -2163,5 +2163,101 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2013051400.01);
     }
 
+    if ($oldversion < 2013061400.01) {
+        // Clean up old tokens which haven't been deleted.
+        $DB->execute("DELETE FROM {user_private_key} WHERE NOT EXISTS
+                         (SELECT 'x' FROM {user} WHERE deleted = 0 AND id = userid)");
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2013061400.01);
+    }
+
+    if ($oldversion < 2013061700.00) {
+        // MDL-40103: Remove unused template tables from the database.
+        // These are now created inline with xmldb_table.
+
+        $tablestocleanup = array('temp_enroled_template','temp_log_template','backup_files_template','backup_ids_template');
+        $dbman = $DB->get_manager();
+
+        foreach ($tablestocleanup as $table) {
+            $xmltable = new xmldb_table($table);
+            if ($dbman->table_exists($xmltable)) {
+                $dbman->drop_table($xmltable);
+            }
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2013061700.00);
+    }
+
+    if ($oldversion < 2013070800.00) {
+
+        // Remove orphan repository instances.
+        if ($DB->get_dbfamily() === 'mysql') {
+            $sql = "DELETE {repository_instances} FROM {repository_instances}
+                    LEFT JOIN {context} ON {context}.id = {repository_instances}.contextid
+                    WHERE {context}.id IS NULL";
+        } else {
+            $sql = "DELETE FROM {repository_instances}
+                    WHERE NOT EXISTS (
+                        SELECT 'x' FROM {context}
+                        WHERE {context}.id = {repository_instances}.contextid)";
+        }
+        $DB->execute($sql);
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2013070800.00);
+    }
+
+    if ($oldversion < 2013070800.01) {
+
+        // Define field lastnamephonetic to be added to user.
+        $table = new xmldb_table('user');
+        $field = new xmldb_field('lastnamephonetic', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'imagealt');
+        $index = new xmldb_index('lastnamephonetic', XMLDB_INDEX_NOTUNIQUE, array('lastnamephonetic'));
+
+        // Conditionally launch add field lastnamephonetic.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+            $dbman->add_index($table, $index);
+        }
+
+        // Define field firstnamephonetic to be added to user.
+        $table = new xmldb_table('user');
+        $field = new xmldb_field('firstnamephonetic', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'lastnamephonetic');
+        $index = new xmldb_index('firstnamephonetic', XMLDB_INDEX_NOTUNIQUE, array('firstnamephonetic'));
+
+        // Conditionally launch add field firstnamephonetic.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+            $dbman->add_index($table, $index);
+        }
+
+        // Define field alternatename to be added to user.
+        $table = new xmldb_table('user');
+        $field = new xmldb_field('middlename', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'firstnamephonetic');
+        $index = new xmldb_index('middlename', XMLDB_INDEX_NOTUNIQUE, array('middlename'));
+
+        // Conditionally launch add field firstnamephonetic.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+            $dbman->add_index($table, $index);
+        }
+
+        // Define field alternatename to be added to user.
+        $table = new xmldb_table('user');
+        $field = new xmldb_field('alternatename', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'middlename');
+        $index = new xmldb_index('alternatename', XMLDB_INDEX_NOTUNIQUE, array('alternatename'));
+
+        // Conditionally launch add field alternatename.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+            $dbman->add_index($table, $index);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2013070800.01);
+    }
+
     return true;
 }

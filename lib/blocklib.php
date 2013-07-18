@@ -341,7 +341,7 @@ class block_manager {
      * output the blocks anyway, so we are not doing wasted effort.)
      *
      * @param string $region a block region that exists on this page.
-     * @param object $output a core_renderer. normally the global $OUTPUT.
+     * @param core_renderer $output a core_renderer. normally the global $OUTPUT.
      * @return boolean Whether there is anything in this region.
      */
     public function region_has_content($region, $output) {
@@ -566,7 +566,7 @@ class block_manager {
         $context = $this->page->context;
         $contexttest = 'bi.parentcontextid = :contextid2';
         $parentcontextparams = array();
-        $parentcontextids = get_parent_contexts($context);
+        $parentcontextids = $context->get_parent_context_ids();
         if ($parentcontextids) {
             list($parentcontexttest, $parentcontextparams) =
                     $DB->get_in_or_equal($parentcontextids, SQL_PARAMS_NAMED, 'parentcontext');
@@ -630,7 +630,7 @@ class block_manager {
         $this->birecordsbyregion = $this->prepare_per_region_arrays();
         $unknown = array();
         foreach ($blockinstances as $bi) {
-            context_instance_preload($bi);
+            context_helper::preload_from_record($bi);
             if ($this->is_known_region($bi->region)) {
                 $this->birecordsbyregion[$bi->region][] = $bi;
             } else {
@@ -1697,12 +1697,12 @@ function matching_page_type_patterns($pagetype) {
  * @return array an array of all the page type patterns that might match this page type.
  */
 function generate_page_type_patterns($pagetype, $parentcontext = null, $currentcontext = null) {
-    global $CFG;
+    global $CFG; // Required for includes bellow.
 
     $bits = explode('-', $pagetype);
 
-    $core = get_core_subsystems();
-    $plugins = get_plugin_types();
+    $core = core_component::get_core_subsystems();
+    $plugins = core_component::get_plugin_types();
 
     //progressively strip pieces off the page type looking for a match
     $componentarray = null;
@@ -1712,7 +1712,7 @@ function generate_page_type_patterns($pagetype, $parentcontext = null, $currentc
 
         // Check to see if the component is a core component
         if (array_key_exists($possiblecomponent, $core) && !empty($core[$possiblecomponent])) {
-            $libfile = $CFG->dirroot.'/'.$core[$possiblecomponent].'/lib.php';
+            $libfile = $core[$possiblecomponent].'/lib.php';
             if (file_exists($libfile)) {
                 require_once($libfile);
                 $function = $possiblecomponent.'_page_type_list';
@@ -1730,7 +1730,7 @@ function generate_page_type_patterns($pagetype, $parentcontext = null, $currentc
             //We've found a plugin type. Look for a plugin name by getting the next section of page type
             if (count($bits) > $i) {
                 $pluginname = $bits[$i];
-                $directory = get_plugin_directory($possiblecomponent, $pluginname);
+                $directory = core_component::get_plugin_directory($possiblecomponent, $pluginname);
                 if (!empty($directory)){
                     $libfile = $directory.'/lib.php';
                     if (file_exists($libfile)) {
@@ -1750,16 +1750,14 @@ function generate_page_type_patterns($pagetype, $parentcontext = null, $currentc
 
             //we'll only get to here if we still don't have any patterns
             //the plugin type may have a callback
-            $directory = get_plugin_directory($possiblecomponent, null);
-            if (!empty($directory)){
-                $libfile = $directory.'/lib.php';
-                if (file_exists($libfile)) {
-                    require_once($libfile);
-                    $function = $possiblecomponent.'_page_type_list';
-                    if (function_exists($function)) {
-                        if ($patterns = $function($pagetype, $parentcontext, $currentcontext)) {
-                            break;
-                        }
+            $directory = $plugins[$possiblecomponent];
+            $libfile = $directory.'/lib.php';
+            if (file_exists($libfile)) {
+                require_once($libfile);
+                $function = $possiblecomponent.'_page_type_list';
+                if (function_exists($function)) {
+                    if ($patterns = $function($pagetype, $parentcontext, $currentcontext)) {
+                        break;
                     }
                 }
             }

@@ -620,8 +620,10 @@ function badges_notify_badge_award(badge $badge, $userid, $issued, $filepathhash
     $userfrom = new stdClass();
     $userfrom->id = $admin->id;
     $userfrom->email = !empty($CFG->badges_defaultissuercontact) ? $CFG->badges_defaultissuercontact : $admin->email;
+    foreach (get_all_user_name_fields() as $addname) {
+        $userfrom->$addname = !empty($CFG->badges_defaultissuername) ? '' : $admin->$addname;
+    }
     $userfrom->firstname = !empty($CFG->badges_defaultissuername) ? $CFG->badges_defaultissuername : $admin->firstname;
-    $userfrom->lastname = !empty($CFG->badges_defaultissuername) ? '' : $admin->lastname;
     $userfrom->maildisplay = true;
 
     $issuedlink = html_writer::link(new moodle_url('/badges/badge.php', array('hash' => $issued)), $badge->name);
@@ -903,7 +905,7 @@ function badges_add_course_navigation(navigation_node $coursenode, stdClass $cou
                     new pix_icon('i/badge', get_string('coursebadges', 'badges')));
 
             if (has_capability('moodle/badges:viewawarded', $coursecontext)) {
-                $url = new moodle_url($CFG->wwwroot . '/badges/index.php',
+                $url = new moodle_url('/badges/index.php',
                         array('type' => BADGE_TYPE_COURSE, 'id' => $course->id));
 
                 $coursenode->get('coursebadges')->add(get_string('managebadges', 'badges'), $url,
@@ -911,12 +913,22 @@ function badges_add_course_navigation(navigation_node $coursenode, stdClass $cou
             }
 
             if (has_capability('moodle/badges:createbadge', $coursecontext)) {
-                $url = new moodle_url($CFG->wwwroot . '/badges/newbadge.php',
+                $url = new moodle_url('/badges/newbadge.php',
                         array('type' => BADGE_TYPE_COURSE, 'id' => $course->id));
 
                 $coursenode->get('coursebadges')->add(get_string('newbadge', 'badges'), $url,
                         navigation_node::TYPE_SETTING, null, 'newbadge');
             }
+        } else if (has_capability('moodle/badges:awardbadge', $coursecontext)) {
+            $coursenode->add(get_string('coursebadges', 'badges'), null,
+                    navigation_node::TYPE_CONTAINER, null, 'coursebadges',
+                    new pix_icon('i/badge', get_string('coursebadges', 'badges')));
+
+            $url = new moodle_url('/badges/index.php',
+                    array('type' => BADGE_TYPE_COURSE, 'id' => $course->id));
+
+            $coursenode->get('coursebadges')->add(get_string('managebadges', 'badges'), $url,
+                    navigation_node::TYPE_SETTING, null, 'coursebadges');
         }
     }
 }

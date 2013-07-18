@@ -105,6 +105,9 @@ function make_log_url($module, $url) {
         case 'role':
             $url = '/'.$url;
             break;
+        case 'grade':
+            $url = "/grade/$url";
+            break;
         default:
             $url = "/mod/$module/$url";
             break;
@@ -1579,38 +1582,6 @@ function delete_mod_from_section($modid, $sectionid) {
 }
 
 /**
- * Moves a section up or down by 1. CANNOT BE USED DIRECTLY BY AJAX!
- *
- * @param object $course course object
- * @param int $section Section number (not id!!!)
- * @param int $move (-1 or 1)
- * @return boolean true if section moved successfully
- * @todo MDL-33379 remove this function in 2.5
- */
-function move_section($course, $section, $move) {
-    debugging('This function will be removed before 2.5 is released please use move_section_to', DEBUG_DEVELOPER);
-
-/// Moves a whole course section up and down within the course
-    global $USER;
-
-    if (!$move) {
-        return true;
-    }
-
-    $sectiondest = $section + $move;
-
-    // compartibility with course formats using field 'numsections'
-    $courseformatoptions = course_get_format($course)->get_format_options();
-    if (array_key_exists('numsections', $courseformatoptions) &&
-            $sectiondest > $courseformatoptions['numsections'] or $sectiondest < 1) {
-        return false;
-    }
-
-    $retval = move_section_to($course, $section, $sectiondest);
-    return $retval;
-}
-
-/**
  * Moves a section within a course, from a position to another.
  * Be very careful: $section and $destination refer to section number,
  * not id!.
@@ -2065,7 +2036,7 @@ function move_courses($courseids, $categoryid) {
             add_to_log($course->id, "course", "move", "edit.php?id=$course->id", $course->id);
 
             $context   = context_course::instance($course->id);
-            context_moved($context, $newparent);
+            $context->update_moved($newparent);
         }
     }
     fix_course_sortorder();
@@ -2382,7 +2353,7 @@ function update_course($data, $editoroptions = NULL) {
 
     if ($movecat) {
         $newparent = context_coursecat::instance($course->category);
-        context_moved($context, $newparent);
+        $context->update_moved($newparent);
     }
 
     fix_course_sortorder();

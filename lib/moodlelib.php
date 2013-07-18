@@ -3558,7 +3558,7 @@ function ismoving($courseid) {
 /**
  * Returns a persons full name
  *
- * Given an object containing firstname and lastname
+ * Given an object containing all of the users name
  * values, this function returns a string with the
  * full name of the person.
  * The result may depend on system settings
@@ -3567,7 +3567,7 @@ function ismoving($courseid) {
  *
  * @global object
  * @global object
- * @param object $user A {@link $USER} object to get full name of
+ * @param object $user A {@link $USER} object to get full name of.
  * @param bool $override If true then the name will be first name followed by last name rather than adhering to fullnamedisplay setting.
  * @return string
  */
@@ -3591,21 +3591,114 @@ function fullname($user, $override=false) {
         $CFG->fullnamedisplay = $SESSION->fullnamedisplay;
     }
 
-    if (!isset($CFG->fullnamedisplay) or $CFG->fullnamedisplay === 'firstname lastname') {
-        return $user->firstname .' '. $user->lastname;
+    $template = null;
+    // If the fullnamedisplay setting is available, set the template to that.
+    if (isset($CFG->fullnamedisplay)) {
+        $template = $CFG->fullnamedisplay;
+    }
+    // If the template is empty, or set to language, or $override is set, return the language string.
+    if (empty($template) || $template == 'language' || $override) {
+        return get_string('fullnamedisplay', null, $user);
+    }
 
-    } else if ($CFG->fullnamedisplay == 'lastname firstname') {
-        return $user->lastname .' '. $user->firstname;
-
-    } else if ($CFG->fullnamedisplay == 'firstname') {
-        if ($override) {
-            return get_string('fullnamedisplay', '', $user);
-        } else {
-            return $user->firstname;
+    // Get all of the name fields.
+    $allnames = get_all_user_name_fields();
+    $requirednames = array();
+    // With each name, see if it is in the display name template, and add it to the required names array if it is.
+    foreach ($allnames as $allname) {
+        if (strpos($template, $allname) !== false) {
+            $requirednames[] = $allname;
+            // If the field is in the template, but not set in the user object, then notify the programmer that it needs to be fixed.
+            if (!array_key_exists($allname, $user)) {
+                debugging('You need to update your sql query to include additional name fields in the user object.', DEBUG_DEVELOPER);
+            }
         }
     }
 
-    return get_string('fullnamedisplay', '', $user);
+    $displayname = $template;
+    // Switch in the actual data into the template.
+    foreach ($requirednames as $altname) {
+        if (isset($user->$altname)) {
+            // Using empty() on the below if statement causes breakages.
+            if ((string)$user->$altname == '') {
+                $displayname = str_replace($altname, 'EMPTY', $displayname);
+            } else {
+                $displayname = str_replace($altname, $user->$altname, $displayname);
+            }
+        } else {
+            $displayname = str_replace($altname, 'EMPTY', $displayname);
+        }
+    }
+    // Tidy up any misc. characters (Not perfect, but gets most characters).
+    // Don't remove the "u" at the end of the first expression unless you want garbled characters when combining hiragana or katakana and parenthesis.
+    $patterns = array();
+    // This regular expression replacement is to fix problems such as 'James () Kirk' Where 'Tiberius' (middlename) has not been filled in by a user.
+    // The special characters are Japanese brackets that are common enough to make special allowance for them (not covered by :punct:).
+    $patterns[] = '/[[:punct:]「」]*EMPTY[[:punct:]「」]*/u';
+    // This regular expression is to remove any double spaces in the display name.
+    $patterns[] = '/\s{2,}/';
+    foreach ($patterns as $pattern) {
+        $displayname = preg_replace($pattern, ' ', $displayname);
+    }
+
+    // Trimming $displayname will help the next check to ensure that we don't have a display name with spaces.
+    $displayname = trim($displayname);
+    if (empty($displayname)) {
+        // Going with just the first name if no alternate fields are filled out. May be changed later depending on what
+        // people in general feel is a good setting to fall back on.
+        $displayname = $user->firstname;
+    }
+    return $displayname;
+}
+
+/**
+ * A centralised location for the all name fields. Returns an array / sql string snippet.
+ *
+ * @param bool $returnsql True for an sql select field snippet.
+ * @param string $alias table alias to use in front of each field.
+ * @return array|string All name fields.
+ */
+function get_all_user_name_fields($returnsql = false, $alias = null) {
+    $alternatenames = array('firstnamephonetic',
+                            'lastnamephonetic',
+                            'middlename',
+                            'alternatename',
+                            'firstname',
+                            'lastname',);
+    if ($returnsql) {
+        if ($alias) {
+            foreach ($alternatenames as $key => $altname) {
+                $alternatenames[$key] = "$alias.$altname";
+            }
+        }
+        $alternatenames = implode(',', $alternatenames);
+    }
+    return $alternatenames;
+}
+
+/**
+ * Returns an array of values in order of occurance in a provided string.
+ * The key in the result is the character postion in the string.
+ *
+ * @param array $values Values to be found in the string format
+ * @param string $stringformat The string which may contain values being searched for.
+ * @return array An array of values in order according to placement in the string format.
+ */
+function order_in_string($values, $stringformat) {
+    $valuearray = array();
+    foreach ($values as $value) {
+        $pattern = "/$value\b/";
+        // Using preg_match as strpos() may match values that are similar e.g. firstname and firstnamephonetic.
+        if (preg_match($pattern, $stringformat)) {
+            $replacement = "thing";
+            // replace the value with something more unique to ensure we get the right position when using strpos().
+            $newformat = preg_replace($pattern, $replacement, $stringformat);
+            $position = strpos($newformat, $replacement);
+            $valuearray[$position] = $value;
+        }
+    }
+    ksort($valuearray);
+    return $valuearray;
 }
 
 /**
@@ -3839,18 +3932,19 @@ function get_user_fieldnames() {
  */
 function create_user_record($username, $password, $auth = 'manual') {
     global $CFG, $DB;
-
+    require_once($CFG->dirroot."/user/profile/lib.php");
     //just in case check text case
     $username = trim(textlib::strtolower($username));
 
     $authplugin = get_auth_plugin($auth);
-
+    $customfields = $authplugin->get_custom_user_profile_fields();
     $newuser = new stdClass();
-
     if ($newinfo = $authplugin->get_userinfo($username)) {
         $newinfo = truncate_userinfo($newinfo);
         foreach ($newinfo as $key => $value){
-            $newuser->$key = $value;
+            if (in_array($key, $authplugin->userfields) || (in_array($key, $customfields))) {
+                $newuser->$key = $value;
+            }
         }
     }
 
@@ -3880,6 +3974,10 @@ function create_user_record($username, $password, $auth = 'manual') {
     $newuser->mnethostid = $CFG->mnet_localhost_id;
 
     $newuser->id = $DB->insert_record('user', $newuser);
+
+    // Save user profile data.
+    profile_save_data($newuser);
+
     $user = get_complete_user_data('id', $newuser->id);
     if (!empty($CFG->{'auth_'.$newuser->auth.'_forcechangepassword'})){
         set_user_preference('auth_forcepasswordchange', 1, $user);
@@ -3903,7 +4001,7 @@ function create_user_record($username, $password, $auth = 'manual') {
  */
 function update_user_record($username) {
     global $DB, $CFG;
-
+    require_once($CFG->dirroot."/user/profile/lib.php");
     $username = trim(textlib::strtolower($username)); /// just in case check text case
 
     $oldinfo = $DB->get_record('user', array('username'=>$username, 'mnethostid'=>$CFG->mnet_localhost_id), '*', MUST_EXIST);
@@ -3912,9 +4010,12 @@ function update_user_record($username) {
 
     if ($newinfo = $userauth->get_userinfo($username)) {
         $newinfo = truncate_userinfo($newinfo);
+        $customfields = $userauth->get_custom_user_profile_fields();
+
         foreach ($newinfo as $key => $value){
             $key = strtolower($key);
-            if (!property_exists($oldinfo, $key) or $key === 'username' or $key === 'id'
+            $iscustom = in_array($key, $customfields);
+            if ((!property_exists($oldinfo, $key) && !$iscustom) or $key === 'username' or $key === 'id'
                     or $key === 'auth' or $key === 'mnethostid' or $key === 'deleted') {
                 // unknown or must not be changed
                 continue;
@@ -3932,7 +4033,8 @@ function update_user_record($username) {
                 // nothing_ for this field. Thus it makes sense to let this value
                 // stand in until LDAP is giving a value for this field.
                 if (!(empty($value) && $lockval === 'unlockedifempty')) {
-                    if ((string)$oldinfo->$key !== (string)$value) {
+                    if ($iscustom || (in_array($key, $userauth->userfields) &&
+                            ((string)$oldinfo->$key !== (string)$value))) {
                         $newuser[$key] = (string)$value;
                     }
                 }
@@ -3942,6 +4044,10 @@ function update_user_record($username) {
             $newuser['id'] = $oldinfo->id;
             $newuser['timemodified'] = time();
             $DB->update_record('user', $newuser);
+
+            // Save user profile data.
+            profile_save_data((object) $newuser);
+
             // fetch full user record for the event, the complete user data contains too much info
             // and we want to be consistent with other places that trigger this event
             events_trigger('user_updated', $DB->get_record('user', array('id'=>$oldinfo->id)));
@@ -4077,6 +4183,9 @@ function delete_user(stdClass $user) {
 
     // unauthorise the user for all services
     $DB->delete_records('external_services_users', array('userid'=>$user->id));
+
+    // Remove users private keys.
+    $DB->delete_records('user_private_key', array('userid' => $user->id));
 
     // force logout - may fail if file based sessions used, sorry
     session_kill_user($user->id);
@@ -4814,7 +4923,7 @@ function remove_course_contents($courseid, $showfeedback = true, array $options 
 
     // Delete every instance of every module,
     // this has to be done before deleting of course level stuff
-    $locations = get_plugin_list('mod');
+    $locations = core_component::get_plugin_list('mod');
     foreach ($locations as $modname=>$moddir) {
         if ($modname === 'NEWMODULE') {
             continue;
@@ -5121,7 +5230,7 @@ function reset_course_userdata($data) {
     $componentstr = get_string('roles');
 
     if (!empty($data->reset_roles_overrides)) {
-        $children = get_child_contexts($context);
+        $children = $context->get_child_contexts();
         foreach ($children as $child) {
             $DB->delete_records('role_capabilities', array('contextid'=>$child->id));
         }
@@ -5132,7 +5241,7 @@ function reset_course_userdata($data) {
     }
 
     if (!empty($data->reset_roles_local)) {
-        $children = get_child_contexts($context);
+        $children = $context->get_child_contexts();
         foreach ($children as $child) {
             role_unassign_all(array('contextid'=>$child->id));
         }
@@ -6054,6 +6163,7 @@ function get_file_packer($mimetype='application/zip') {
     switch ($mimetype) {
         case 'application/zip':
         case 'application/vnd.moodle.backup':
+        case 'application/vnd.moodle.profiling':
             $classname = 'zip_packer';
             break;
         case 'application/x-tar':
@@ -6717,7 +6827,7 @@ class core_string_manager implements string_manager {
     public function load_component_strings($component, $lang, $disablecache=false, $disablelocal=false) {
         global $CFG;
 
-        list($plugintype, $pluginname) = normalize_component($component);
+        list($plugintype, $pluginname) = core_component::normalize_component($component);
         if ($plugintype == 'core' and is_null($pluginname)) {
             $component = 'core';
         } else {
@@ -6765,7 +6875,7 @@ class core_string_manager implements string_manager {
             }
 
         } else {
-            if (!$location = get_plugin_directory($plugintype, $pluginname) or !is_dir($location)) {
+            if (!$location = core_component::get_plugin_directory($plugintype, $pluginname) or !is_dir($location)) {
                 return array();
             }
             if ($plugintype === 'mod') {
@@ -6896,13 +7006,13 @@ class core_string_manager implements string_manager {
             }
             if (!isset($string[$identifier])) {
                 // the string is still missing - should be fixed by developer
-                list($plugintype, $pluginname) = normalize_component($component);
+                list($plugintype, $pluginname) = core_component::normalize_component($component);
                 if ($plugintype == 'core') {
                     $file = "lang/en/{$component}.php";
                 } else if ($plugintype == 'mod') {
                     $file = "mod/{$pluginname}/lang/en/{$pluginname}.php";
                 } else {
-                    $path = get_plugin_directory($plugintype, $pluginname);
+                    $path = core_component::get_plugin_directory($plugintype, $pluginname);
                     $file = "{$path}/lang/en/{$plugintype}_{$pluginname}.php";
                 }
                 debugging("Invalid get_string() identifier: '{$identifier}' or component '{$component}'. " .
@@ -7199,6 +7309,11 @@ class core_string_manager implements string_manager {
         // and re-populate it again
         fulldelete($this->menucache);
         $this->get_list_of_translations(true);
+
+        // Lang packs use PHP files in dataroot, it is better to invalidate opcode caches.
+        if (function_exists('opcache_reset')) {
+            opcache_reset();
+        }
     }
 
     /**
@@ -7687,7 +7802,7 @@ function get_list_of_themes() {
     if (!empty($CFG->themelist)) {       // use admin's list of themes
         $themelist = explode(',', $CFG->themelist);
     } else {
-        $themelist = array_keys(get_plugin_list("theme"));
+        $themelist = array_keys(core_component::get_plugin_list("theme"));
     }
 
     foreach ($themelist as $key => $themename) {
@@ -8024,361 +8139,13 @@ function endecrypt ($pwd, $data, $case) {
 /// ENVIRONMENT CHECKING  ////////////////////////////////////////////////////////////
 
 /**
- * Returns the exact absolute path to plugin directory.
- *
- * @param string $plugintype type of plugin
- * @param string $name name of the plugin
- * @return string full path to plugin directory; NULL if not found
- */
-function get_plugin_directory($plugintype, $name) {
-    global $CFG;
-
-    if ($plugintype === '') {
-        $plugintype = 'mod';
-    }
-
-    $types = get_plugin_types(true);
-    if (!array_key_exists($plugintype, $types)) {
-        return NULL;
-    }
-    $name = clean_param($name, PARAM_SAFEDIR); // just in case ;-)
-
-    if (!empty($CFG->themedir) and $plugintype === 'theme') {
-        if (!is_dir($types['theme'] . '/' . $name)) {
-            // ok, so the theme is supposed to be in the $CFG->themedir
-            return $CFG->themedir . '/' . $name;
-        }
-    }
-
-    return $types[$plugintype].'/'.$name;
-}
-
-/**
- * Return exact absolute path to a plugin directory.
- *
- * @param string $component name such as 'moodle', 'mod_forum'
- * @return string full path to component directory; NULL if not found
- */
-function get_component_directory($component) {
-    global $CFG;
-
-    list($type, $plugin) = normalize_component($component);
-
-    if ($type === 'core') {
-        if ($plugin === NULL ) {
-            $path = $CFG->libdir;
-        } else {
-            $subsystems = get_core_subsystems();
-            if (isset($subsystems[$plugin])) {
-                $path = $CFG->dirroot.'/'.$subsystems[$plugin];
-            } else {
-                $path = NULL;
-            }
-        }
-
-    } else {
-        $path = get_plugin_directory($type, $plugin);
-    }
-
-    return $path;
-}
-
-/**
- * Normalize the component name using the "frankenstyle" names.
- * @param string $component
- * @return array $type+$plugin elements
- */
-function normalize_component($component) {
-    if ($component === 'moodle' or $component === 'core') {
-        $type = 'core';
-        $plugin = NULL;
-
-    } else if (strpos($component, '_') === false) {
-        $subsystems = get_core_subsystems();
-        if (array_key_exists($component, $subsystems)) {
-            $type   = 'core';
-            $plugin = $component;
-        } else {
-            // everything else is a module
-            $type   = 'mod';
-            $plugin = $component;
-        }
-
-    } else {
-        list($type, $plugin) = explode('_', $component, 2);
-        $plugintypes = get_plugin_types(false);
-        if ($type !== 'core' and !array_key_exists($type, $plugintypes)) {
-            $type   = 'mod';
-            $plugin = $component;
-        }
-    }
-
-    return array($type, $plugin);
-}
-
-/**
- * List all core subsystems and their location
- *
- * This is a whitelist of components that are part of the core and their
- * language strings are defined in /lang/en/<<subsystem>>.php. If a given
- * plugin is not listed here and it does not have proper plugintype prefix,
- * then it is considered as course activity module.
- *
- * The location is dirroot relative path. NULL means there is no special
- * directory for this subsystem. If the location is set, the subsystem's
- * renderer.php is expected to be there.
- *
- * @return array of (string)name => (string|null)location
- */
-function get_core_subsystems() {
-    global $CFG;
-
-    static $info = null;
-
-    if (!$info) {
-        $info = array(
-            'access'      => NULL,
-            'admin'       => $CFG->admin,
-            'auth'        => 'auth',
-            'backup'      => 'backup/util/ui',
-            'badges'      => 'badges',
-            'block'       => 'blocks',
-            'blog'        => 'blog',
-            'bulkusers'   => NULL,
-            'cache'       => 'cache',
-            'calendar'    => 'calendar',
-            'cohort'      => 'cohort',
-            'condition'   => NULL,
-            'completion'  => NULL,
-            'countries'   => NULL,
-            'course'      => 'course',
-            'currencies'  => NULL,
-            'dbtransfer'  => NULL,
-            'debug'       => NULL,
-            'dock'        => NULL,
-            'editor'      => 'lib/editor',
-            'edufields'   => NULL,
-            'enrol'       => 'enrol',
-            'error'       => NULL,
-            'filepicker'  => NULL,
-            'files'       => 'files',
-            'filters'     => NULL,
-            'fonts'       => NULL,
-            'form'        => 'lib/form',
-            'grades'      => 'grade',
-            'grading'     => 'grade/grading',
-            'group'       => 'group',
-            'help'        => NULL,
-            'hub'         => NULL,
-            'imscc'       => NULL,
-            'install'     => NULL,
-            'iso6392'     => NULL,
-            'langconfig'  => NULL,
-            'license'     => NULL,
-            'mathslib'    => NULL,
-            'media'       => 'media',
-            'message'     => 'message',
-            'mimetypes'   => NULL,
-            'mnet'        => 'mnet',
-            'moodle.org'  => NULL, // the dot is nasty, watch out! should be renamed to moodleorg
-            'my'          => 'my',
-            'notes'       => 'notes',
-            'pagetype'    => NULL,
-            'pix'         => NULL,
-            'plagiarism'  => 'plagiarism',
-            'plugin'      => NULL,
-            'portfolio'   => 'portfolio',
-            'publish'     => 'course/publish',
-            'question'    => 'question',
-            'rating'      => 'rating',
-            'register'    => 'admin/registration', //TODO: this is wrong, unfortunately we would need to modify hub code to pass around the correct url
-            'repository'  => 'repository',
-            'rss'         => 'rss',
-            'role'        => $CFG->admin.'/role',
-            'search'      => 'search',
-            'table'       => NULL,
-            'tag'         => 'tag',
-            'timezones'   => NULL,
-            'user'        => 'user',
-            'userkey'     => NULL,
-            'webservice'  => 'webservice',
-        );
-    }
-
-    return $info;
-}
-
-/**
- * Lists all plugin types
- * @param bool $fullpaths false means relative paths from dirroot
- * @return array Array of strings - name=>location
- */
-function get_plugin_types($fullpaths=true) {
-    global $CFG;
-
-    $cache = cache::make('core', 'plugintypes');
-
-    if ($fullpaths) {
-        $cached = $cache->get(1);
-    } else {
-        $cached = $cache->get(0);
-    }
-
-    if ($cached !== false) {
-        return $cached;
-
-    } else {
-        $info = array('qtype'         => 'question/type',
-                      'mod'           => 'mod',
-                      'auth'          => 'auth',
-                      'enrol'         => 'enrol',
-                      'message'       => 'message/output',
-                      'block'         => 'blocks',
-                      'filter'        => 'filter',
-                      'editor'        => 'lib/editor',
-                      'format'        => 'course/format',
-                      'profilefield'  => 'user/profile/field',
-                      'report'        => 'report',
-                      'coursereport'  => 'course/report', // must be after system reports
-                      'gradeexport'   => 'grade/export',
-                      'gradeimport'   => 'grade/import',
-                      'gradereport'   => 'grade/report',
-                      'gradingform'   => 'grade/grading/form',
-                      'mnetservice'   => 'mnet/service',
-                      'webservice'    => 'webservice',
-                      'repository'    => 'repository',
-                      'portfolio'     => 'portfolio',
-                      'qbehaviour'    => 'question/behaviour',
-                      'qformat'       => 'question/format',
-                      'plagiarism'    => 'plagiarism',
-                      'tool'          => $CFG->admin.'/tool',
-                      'cachestore'    => 'cache/stores',
-                      'cachelock'     => 'cache/locks',
-                      'theme'         => 'theme',  // this is a bit hacky, themes may be in $CFG->themedir too
-        );
-
-        $subpluginowners = array_merge(array_values(get_plugin_list('mod')),
-                array_values(get_plugin_list('editor')));
-        foreach ($subpluginowners as $ownerdir) {
-            if (file_exists("$ownerdir/db/subplugins.php")) {
-                $subplugins = array();
-                include("$ownerdir/db/subplugins.php");
-                foreach ($subplugins as $subtype=>$dir) {
-                    $info[$subtype] = $dir;
-                }
-            }
-        }
-
-        // local is always last!
-        $info['local'] = 'local';
-
-        $fullinfo = array();
-        foreach ($info as $type => $dir) {
-            $fullinfo[$type] = $CFG->dirroot.'/'.$dir;
-        }
-
-        $cache->set(0, $info);
-        $cache->set(1, $fullinfo);
-
-        return ($fullpaths ? $fullinfo : $info);
-    }
-}
-
-/**
  * This method validates a plug name. It is much faster than calling clean_param.
  * @param string $name a string that might be a plugin name.
  * @return bool if this string is a valid plugin name.
  */
 function is_valid_plugin_name($name) {
-    return (bool) preg_match('/^[a-z](?:[a-z0-9_](?!__))*[a-z0-9]$/', $name);
-}
-
-/**
- * Simplified version of get_list_of_plugins()
- * @param string $plugintype type of plugin
- * @return array name=>fulllocation pairs of plugins of given type
- */
-function get_plugin_list($plugintype) {
-    global $CFG;
-
-    $cache = cache::make('core', 'pluginlist');
-    $cached = $cache->get($plugintype);
-    if ($cached !== false) {
-        return $cached;
-    }
-
-    $ignored = array('CVS', '_vti_cnf', 'simpletest', 'db', 'yui', 'tests');
-    if ($plugintype == 'auth') {
-        // Historically we have had an auth plugin called 'db', so allow a special case.
-        $key = array_search('db', $ignored);
-        if ($key !== false) {
-            unset($ignored[$key]);
-        }
-    }
-
-    if ($plugintype === '') {
-        $plugintype = 'mod';
-    }
-
-    $fulldirs = array();
-
-    if ($plugintype === 'mod') {
-        // mod is an exception because we have to call this function from get_plugin_types()
-        $fulldirs[] = $CFG->dirroot.'/mod';
-
-    } else if ($plugintype === 'editor') {
-        // Exception also needed for editor for same reason.
-        $fulldirs[] = $CFG->dirroot . '/lib/editor';
-
-    } else if ($plugintype === 'theme') {
-        $fulldirs[] = $CFG->dirroot.'/theme';
-        // themes are special because they may be stored also in separate directory
-        if (!empty($CFG->themedir) and file_exists($CFG->themedir) and is_dir($CFG->themedir) ) {
-            $fulldirs[] = $CFG->themedir;
-        }
-
-    } else {
-        $types = get_plugin_types(true);
-        if (!array_key_exists($plugintype, $types)) {
-            $cache->set($plugintype, array());
-            return array();
-        }
-        $fulldir = $types[$plugintype];
-        if (!file_exists($fulldir)) {
-            $cache->set($plugintype, array());
-            return array();
-        }
-        $fulldirs[] = $fulldir;
-    }
-    $result = array();
-
-    foreach ($fulldirs as $fulldir) {
-        if (!is_dir($fulldir)) {
-            continue;
-        }
-        $items = new DirectoryIterator($fulldir);
-        foreach ($items as $item) {
-            if ($item->isDot() or !$item->isDir()) {
-                continue;
-            }
-            $pluginname = $item->getFilename();
-            if (in_array($pluginname, $ignored)) {
-                continue;
-            }
-            if (!is_valid_plugin_name($pluginname)) {
-                // Better ignore plugins with problematic names here.
-                continue;
-            }
-            $result[$pluginname] = $fulldir.'/'.$pluginname;
-            unset($item);
-        }
-        unset($items);
-    }
-
-    //TODO: implement better sorting once we migrated all plugin names to 'pluginname', ksort does not work for unicode, that is why we have to sort by the dir name, not the strings!
-    ksort($result);
-    $cache->set($plugintype, $result);
-    return $result;
+    // This does not work for 'mod', bad luck, use any other type.
+    return core_component::is_valid_plugin_name('tool', $name);
 }
 
 /**
@@ -8395,7 +8162,7 @@ function get_plugin_list_with_file($plugintype, $file, $include = false) {
 
     $plugins = array();
 
-    foreach(get_plugin_list($plugintype) as $plugin => $dir) {
+    foreach (core_component::get_plugin_list($plugintype) as $plugin => $dir) {
         $path = $dir . '/' . $file;
         if (file_exists($path)) {
             if ($include) {
@@ -8444,37 +8211,6 @@ function get_plugin_list_with_function($plugintype, $function, $file = 'lib.php'
 }
 
 /**
- * Get a list of all the plugins of a given type that define a certain class
- * in a certain file. The plugin component names and class names are returned.
- *
- * @param string $plugintype the type of plugin, e.g. 'mod' or 'report'.
- * @param string $class the part of the name of the class after the
- *      frankenstyle prefix. e.g 'thing' if you are looking for classes with
- *      names like report_courselist_thing. If you are looking for classes with
- *      the same name as the plugin name (e.g. qtype_multichoice) then pass ''.
- * @param string $file the name of file within the plugin that defines the class.
- * @return array with frankenstyle plugin names as keys (e.g. 'report_courselist', 'mod_forum')
- *      and the class names as values (e.g. 'report_courselist_thing', 'qtype_multichoice').
- */
-function get_plugin_list_with_class($plugintype, $class, $file) {
-    if ($class) {
-        $suffix = '_' . $class;
-    } else {
-        $suffix = '';
-    }
-
-    $pluginclasses = array();
-    foreach (get_plugin_list_with_file($plugintype, $file, true) as $plugin => $notused) {
-        $classname = $plugintype . '_' . $plugin . $suffix;
-        if (class_exists($classname)) {
-            $pluginclasses[$plugintype . '_' . $plugin] = $classname;
-        }
-    }
-
-    return $pluginclasses;
-}
-
-/**
  * Lists plugin-like directories within specified directory
  *
  * This function was originally used for standard Moodle plugins, please use
@@ -8499,6 +8235,17 @@ function get_list_of_plugins($directory='mod', $exclude='', $basedir='') {
         $basedir = $basedir .'/'. $directory;
     }
 
+    if (empty($exclude) and debugging('', DEBUG_DEVELOPER)) {
+        // Make sure devs do not use this to list normal plugins,
+        // this is intended for general directories that are not plugins!
+
+        $subtypes = core_component::get_plugin_types();
+        if (in_array($basedir, $subtypes)) {
+            debugging('get_list_of_plugins() should not be used to list real plugins, use core_component::get_plugin_list() instead!', DEBUG_DEVELOPER);
+        }
+        unset($subtypes);
+    }
+
     if (file_exists($basedir) && filetype($basedir) == 'dir') {
         if (!$dirhandle = opendir($basedir)) {
             debugging("Directory permission error for plugin ({$directory}). Directory exists but cannot be read.", DEBUG_DEVELOPER);
@@ -8506,7 +8253,7 @@ function get_list_of_plugins($directory='mod', $exclude='', $basedir='') {
         }
         while (false !== ($dir = readdir($dirhandle))) {
             $firstchar = substr($dir, 0, 1);
-            if ($firstchar === '.' or $dir === 'CVS' or $dir === '_vti_cnf' or $dir === 'simpletest' or $dir === 'yui' or $dir === 'phpunit' or $dir === $exclude) {
+            if ($firstchar === '.' or $dir === 'CVS' or $dir === '_vti_cnf' or $dir === 'simpletest' or $dir === 'yui' or $dir === 'tests' or $dir === 'classes' or $dir === $exclude) {
                 continue;
             }
             if (filetype($basedir .'/'. $dir) != 'dir') {
@@ -8557,13 +8304,13 @@ function component_callback($component, $function, array $params = array(), $def
     }
     $component = $cleancomponent;
 
-    list($type, $name) = normalize_component($component);
+    list($type, $name) = core_component::normalize_component($component);
     $component = $type . '_' . $name;
 
     $oldfunction = $name.'_'.$function;
     $function = $component.'_'.$function;
 
-    $dir = get_component_directory($component);
+    $dir = core_component::get_component_directory($component);
     if (empty($dir)) {
         throw new coding_exception('Invalid component used in plugin/component_callback():' . $component);
     }
@@ -8632,7 +8379,7 @@ function plugin_supports($type, $name, $feature, $default = NULL) {
         }
 
     } else {
-        if (!$path = get_plugin_directory($type, $name)) {
+        if (!$path = core_component::get_plugin_directory($type, $name)) {
             // non existent plugin type
             return false;
         }
@@ -9112,17 +8859,6 @@ function get_browser_version_classes() {
 }
 
 /**
- * Can handle rotated text. Whether it is safe to use the trickery in textrotate.js.
- *
- * @return bool True for yes, false for no
- */
-function can_use_rotated_text() {
-    return check_browser_version('MSIE', 9) || check_browser_version('Firefox', 2) ||
-            check_browser_version('Chrome', 21) || check_browser_version('Safari', 536.25) ||
-            check_browser_version('Opera', 12) || check_browser_version('Safari iOS', 533);
-}
-
-/**
  * Determine if moodle installation requires update
  *
  * Checks version numbers of main code and all modules to see
@@ -9140,8 +8876,6 @@ function moodle_needs_upgrading() {
 
     // We have to purge plugin related caches now to be sure we have fresh data
     // and new plugins can be detected.
-    cache::make('core', 'plugintypes')->purge();
-    cache::make('core', 'pluginlist')->purge();
     cache::make('core', 'plugininfo_base')->purge();
     cache::make('core', 'plugininfo_mod')->purge();
     cache::make('core', 'plugininfo_block')->purge();
@@ -9157,7 +8891,7 @@ function moodle_needs_upgrading() {
     }
 
     // modules
-    $mods = get_plugin_list('mod');
+    $mods = core_component::get_plugin_list('mod');
     $installed = $DB->get_records('modules', array(), '', 'name, version');
     foreach ($mods as $mod => $fullmod) {
         if ($mod === 'NEWMODULE') {   // Someone has unzipped the template, ignore it
@@ -9181,7 +8915,7 @@ function moodle_needs_upgrading() {
     unset($installed);
 
     // blocks
-    $blocks = get_plugin_list('block');
+    $blocks = core_component::get_plugin_list('block');
     $installed = $DB->get_records('block', array(), '', 'name, version');
     require_once($CFG->dirroot.'/blocks/moodleblock.class.php');
     foreach ($blocks as $blockname=>$fullblock) {
@@ -9203,13 +8937,13 @@ function moodle_needs_upgrading() {
     unset($installed);
 
     // now the rest of plugins
-    $plugintypes = get_plugin_types();
+    $plugintypes = core_component::get_plugin_types();
     unset($plugintypes['mod']);
     unset($plugintypes['block']);
 
     $versions = $DB->get_records_menu('config_plugins', array('name' => 'version'), 'plugin', 'plugin, value');
     foreach ($plugintypes as $type=>$unused) {
-        $plugs = get_plugin_list($type);
+        $plugs = core_component::get_plugin_list($type);
         foreach ($plugs as $plug=>$fullplug) {
             $component = $type.'_'.$plug;
             if (!is_readable($fullplug.'/version.php')) {

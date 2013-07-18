@@ -1319,41 +1319,6 @@ class moodlelib_testcase extends advanced_testcase {
         $USER = $olduser;
     }
 
-    public function test_normalize_component() {
-
-        // moodle core
-        $this->assertEquals(normalize_component('moodle'), array('core', null));
-        $this->assertEquals(normalize_component('core'), array('core', null));
-
-        // moodle core subsystems
-        $this->assertEquals(normalize_component('admin'), array('core', 'admin'));
-        $this->assertEquals(normalize_component('core_admin'), array('core', 'admin'));
-
-        // activity modules and their subplugins
-        $this->assertEquals(normalize_component('workshop'), array('mod', 'workshop'));
-        $this->assertEquals(normalize_component('mod_workshop'), array('mod', 'workshop'));
-        $this->assertEquals(normalize_component('workshopform_accumulative'), array('workshopform', 'accumulative'));
-        $this->assertEquals(normalize_component('quiz'), array('mod', 'quiz'));
-        $this->assertEquals(normalize_component('quiz_grading'), array('quiz', 'grading'));
-        $this->assertEquals(normalize_component('data'), array('mod', 'data'));
-        $this->assertEquals(normalize_component('datafield_checkbox'), array('datafield', 'checkbox'));
-
-        // other plugin types
-        $this->assertEquals(normalize_component('auth_mnet'), array('auth', 'mnet'));
-        $this->assertEquals(normalize_component('enrol_self'), array('enrol', 'self'));
-        $this->assertEquals(normalize_component('block_html'), array('block', 'html'));
-        $this->assertEquals(normalize_component('block_mnet_hosts'), array('block', 'mnet_hosts'));
-        $this->assertEquals(normalize_component('local_amos'), array('local', 'amos'));
-
-        // unknown components are supposed to be activity modules
-        $this->assertEquals(normalize_component('whothefuckwouldcomewithsuchastupidnameofcomponent'),
-            array('mod', 'whothefuckwouldcomewithsuchastupidnameofcomponent'));
-        $this->assertEquals(normalize_component('whothefuck_wouldcomewithsuchastupidnameofcomponent'),
-            array('mod', 'whothefuck_wouldcomewithsuchastupidnameofcomponent'));
-        $this->assertEquals(normalize_component('whothefuck_would_come_withsuchastupidnameofcomponent'),
-            array('mod', 'whothefuck_would_come_withsuchastupidnameofcomponent'));
-    }
-
     protected function get_fake_preference_test_userid() {
         global $DB;
 
@@ -2318,7 +2283,7 @@ class moodlelib_testcase extends advanced_testcase {
         $this->assertEquals(convert_to_array($obj), (array)$obj);
 
         // check that context object (with iterator) is converted to array properly
-        $obj = get_system_context();
+        $obj = context_system::instance();
         $ar = array(
             'id'           => $obj->id,
             'contextlevel' => $obj->contextlevel,
@@ -2657,5 +2622,164 @@ class moodlelib_testcase extends advanced_testcase {
             // Otherwise password should have been updated to a bcrypt hash.
             $this->assertFalse(password_is_legacy_hash($user->password));
         }
+    }
+
+    public function test_fullname() {
+        global $CFG;
+
+        $this->resetAfterTest();
+
+        // Create a user to test the name display on.
+        $record = array();
+        $record['firstname'] = 'Scott';
+        $record['lastname'] = 'Fletcher';
+        $record['firstnamephonetic'] = 'スコット';
+        $record['lastnamephonetic'] = 'フレチャー';
+        $record['alternatename'] = 'No friends';
+        $user = $this->getDataGenerator()->create_user($record);
+
+        // back up config settings for restore later.
+        $originalcfg = new stdClass();
+        $originalcfg->fullnamedisplay = $CFG->fullnamedisplay;
+
+        // Testing existing fullnamedisplay settings.
+        $CFG->fullnamedisplay = 'firstname';
+        $testname = fullname($user);
+        $this->assertEquals($testname, $user->firstname);
+
+        $CFG->fullnamedisplay = 'firstname lastname';
+        $expectedname = "$user->firstname $user->lastname";
+        $testname = fullname($user);
+        $this->assertEquals($testname, $expectedname);
+
+        $CFG->fullnamedisplay = 'lastname firstname';
+        $expectedname = "$user->lastname $user->firstname";
+        $testname = fullname($user);
+        $this->assertEquals($testname, $expectedname);
+
+        $expectedname = get_string('fullnamedisplay', null, $user);
+        $CFG->fullnamedisplay = 'language';
+        $testname = fullname($user);
+        $this->assertEquals($testname, $expectedname);
+
+        // Test override parameter.
+        $CFG->fullnamedisplay = 'firstname';
+        $expectedname = "$user->firstname $user->lastname";
+        $testname = fullname($user, true);
+        $this->assertEquals($testname, $expectedname);
+
+        // Test additional name fields.
+        $CFG->fullnamedisplay = 'lastname lastnamephonetic firstname firstnamephonetic';
+        $expectedname = "$user->lastname $user->lastnamephonetic $user->firstname $user->firstnamephonetic";
+        $testname = fullname($user);
+        $this->assertEquals($testname, $expectedname);
+
+        // Test for handling missing data.
+        $user->middlename = null;
+        // Parenthesis with no data.
+        $CFG->fullnamedisplay = 'firstname (middlename) lastname';
+        $expectedname = "$user->firstname $user->lastname";
+        $testname = fullname($user);
+        $this->assertEquals($testname, $expectedname);
+
+        // Extra spaces due to no data.
+        $CFG->fullnamedisplay = 'firstname middlename lastname';
+        $expectedname = "$user->firstname $user->lastname";
+        $testname = fullname($user);
+        $this->assertEquals($testname, $expectedname);
+
+        // Regular expression testing.
+        // Remove some data from the user fields
+        $user->firstnamephonetic = '';
+        $user->lastnamephonetic = '';
+
+        // Removing empty brackets and excess whitespace.
+        // All of these configurations should resolve to just firstname lastname.
+        $configarray = array();
+        $configarray[] = 'firstname lastname [firstnamephonetic lastnamephonetic]';
+        $configarray[] = 'firstname lastname \'middlename\'';
+        $configarray[] = 'firstname "firstnamephonetic" lastname';
+        $configarray[] = 'firstname 「firstnamephonetic」 lastname 「lastnamephonetic」';
+
+        foreach ($configarray as $config) {
+            $CFG->fullnamedisplay = $config;
+            $expectedname = "$user->firstname $user->lastname";
+            $testname = fullname($user);
+            $this->assertEquals($testname, $expectedname);
+        }
+
+        // Check to make sure that other characters are left in place.
+        $configarray = array();
+        $configarray['0'] = new stdClass();
+        $configarray['0']->config = 'lastname firstname, middlename';
+        $configarray['0']->expectedname = "$user->lastname $user->firstname,";
+        $configarray['1'] = new stdClass();
+        $configarray['1']->config = 'lastname firstname + alternatename';
+        $configarray['1']->expectedname = "$user->lastname $user->firstname + $user->alternatename";
+        $configarray['2'] = new stdClass();
+        $configarray['2']->config = 'firstname aka: alternatename';
+        $configarray['2']->expectedname = "$user->firstname aka: $user->alternatename";
+        $configarray['3'] = new stdClass();
+        $configarray['3']->config = 'firstname (alternatename)';
+        $configarray['3']->expectedname = "$user->firstname ($user->alternatename)";
+        $configarray['4'] = new stdClass();
+        $configarray['4']->config = 'firstname [alternatename]';
+        $configarray['4']->expectedname = "$user->firstname [$user->alternatename]";
+        $configarray['5'] = new stdClass();
+        $configarray['5']->config = 'firstname "lastname"';
+        $configarray['5']->expectedname = "$user->firstname \"$user->lastname\"";
+
+        foreach ($configarray as $config) {
+            $CFG->fullnamedisplay = $config->config;
+            $expectedname = $config->expectedname;
+            $testname = fullname($user);
+            $this->assertEquals($testname, $expectedname);
+        }
+
+        // tidy up after we finish testing.
+        $CFG->fullnamedisplay = $originalcfg->fullnamedisplay;
+    }
+
+    public function test_get_all_user_name_fields() {
+        $this->resetAfterTest();
+
+        // Additional names in an array.
+        $testarray = array('firstnamephonetic',
+                           'lastnamephonetic',
+                           'middlename',
+                           'alternatename',
+                           'firstname',
+                           'lastname');
+        $this->assertEquals($testarray, get_all_user_name_fields());
+
+        // Additional names as a string.
+        $teststring = 'firstnamephonetic,lastnamephonetic,middlename,alternatename,firstname,lastname';
+        $this->assertEquals($teststring, get_all_user_name_fields(true));
+
+        // Additional names as a string with an alias.
+        $teststring = 't.firstnamephonetic,t.lastnamephonetic,t.middlename,t.alternatename,t.firstname,t.lastname';
+        $this->assertEquals($teststring, get_all_user_name_fields(true, 't'));
+    }
+
+    public function test_order_in_string() {
+        $this->resetAfterTest();
+
+        // Return an array in an order as they are encountered in a string.
+        $valuearray = array('second', 'firsthalf', 'first');
+        $formatstring = 'first firsthalf some other text (second)';
+        $expectedarray = array('0' => 'first', '6' => 'firsthalf', '33' => 'second');
+        $this->assertEquals($expectedarray, order_in_string($valuearray, $formatstring));
+
+        // Try again with a different order for the format.
+        $valuearray = array('second', 'firsthalf', 'first');
+        $formatstring = 'firsthalf first second';
+        $expectedarray = array('0' => 'firsthalf', '10' => 'first', '16' => 'second');
+        $this->assertEquals($expectedarray, order_in_string($valuearray, $formatstring));
+
+        // Try again with yet another different order for the format.
+        $valuearray = array('second', 'firsthalf', 'first');
+        $formatstring = 'start seconds away second firstquater first firsthalf';
+        $expectedarray = array('19' => 'second', '38' => 'first', '44' => 'firsthalf');
+        $this->assertEquals($expectedarray, order_in_string($valuearray, $formatstring));
     }
 }

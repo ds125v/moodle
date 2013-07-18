@@ -4,7 +4,6 @@
 
     require_once('../config.php');
     require_once('lib.php');
-    require_once($CFG->dirroot.'/mod/forum/lib.php');
     require_once($CFG->libdir.'/conditionlib.php');
     require_once($CFG->libdir.'/completionlib.php');
 
@@ -50,7 +49,7 @@
     // Prevent caching of this page to stop confusion when changing page after making AJAX changes
     $PAGE->set_cacheable(false);
 
-    preload_course_contexts($course->id);
+    context_helper::preload_course($course->id);
     $context = context_course::instance($course->id, MUST_EXIST);
 
     // Remove any switched roles before checking login

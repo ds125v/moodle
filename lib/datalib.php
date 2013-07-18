@@ -507,10 +507,11 @@ function get_users_listing($sort='lastaccess', $dir='ASC', $page=0, $recordsperp
                 array('id', 'username', 'email', 'firstname', 'lastname', 'city', 'country',
                 'lastaccess', 'confirmed', 'mnethostid'));
     }
+    $namefields = get_all_user_name_fields(true);
+    $extrafields = "$extrafields, $namefields";
 
     // warning: will return UNCONFIRMED USERS
-    return $DB->get_records_sql("SELECT id, username, email, firstname, lastname, city, country,
-                                        lastaccess, confirmed, mnethostid, suspended $extrafields
+    return $DB->get_records_sql("SELECT id, username, email, city, country, lastaccess, confirmed, mnethostid, suspended $extrafields
                                    FROM {user}
                                   WHERE $select
                                   $sort", $params, $page, $recordsperpage);
@@ -631,7 +632,7 @@ function get_courses($categoryid="all", $sort="c.sortorder ASC", $fields="c.*") 
 
         // loop throught them
         foreach ($courses as $course) {
-            context_instance_preload($course);
+            context_helper::preload_from_record($course);
             if (isset($course->visible) && $course->visible <= 0) {
                 // for hidden courses, require visibility check
                 if (has_capability('moodle/course:viewhiddencourses', context_course::instance($course->id))) {
@@ -698,7 +699,7 @@ function get_courses_page($categoryid="all", $sort="c.sortorder ASC", $fields="c
     $rs = $DB->get_recordset_sql($sql, $params);
     // iteration will have to be done inside loop to keep track of the limitfrom and limitnum
     foreach($rs as $course) {
-        context_instance_preload($course);
+        context_helper::preload_from_record($course);
         if ($course->visible <= 0) {
             // for hidden courses, require visibility check
             if (has_capability('moodle/course:viewhiddencourses', context_course::instance($course->id))) {
@@ -810,7 +811,7 @@ function get_courses_search($searchterms, $sort, $page, $recordsperpage, &$total
     foreach($rs as $course) {
         if (!$course->visible) {
             // preload contexts only for hidden courses or courses we need to return
-            context_instance_preload($course);
+            context_helper::preload_from_record($course);
             $coursecontext = context_course::instance($course->id);
             if (!has_capability('moodle/course:viewhiddencourses', $coursecontext)) {
                 continue;
@@ -1538,6 +1539,35 @@ function coursemodule_visible_for_user($cm, $userid=0) {
 
 /// LOG FUNCTIONS /////////////////////////////////////////////////////
 
+/**
+ * Add an entry to the config log table.
+ *
+ * These are "action" focussed rather than web server hits,
+ * and provide a way to easily reconstruct changes to Moodle configuration.
+ *
+ * @package core
+ * @category log
+ * @global moodle_database $DB
+ * @global stdClass $USER
+ * @param    string  $name     The name of the configuration change action
+                               For example 'filter_active' when activating or deactivating a filter
+ * @param    string  $oldvalue The config setting's previous value
+ * @param    string  $value    The config setting's new value
+ * @param    string  $plugin   Plugin name, for example a filter name when changing filter configuration
+ * @return void
+ */
+function add_to_config_log($name, $oldvalue, $value, $plugin) {
+    global $USER, $DB;
+
+    $log = new stdClass();
+    $log->userid       = during_initial_install() ? 0 :$USER->id; // 0 as user id during install
+    $log->timemodified = time();
+    $log->name         = $name;
+    $log->oldvalue  = $oldvalue;
+    $log->value     = $value;
+    $log->plugin    = $plugin;
+    $DB->insert_record('config_log', $log);
+}
 
 /**
  * Add an entry to the log table.
@@ -1752,8 +1782,8 @@ function get_logs($select, array $params=null, $order='l.time DESC', $limitfrom=
            $select";
 
     $totalcount = $DB->count_records_sql($sql, $params);
-
-    $sql = "SELECT l.*, u.firstname, u.lastname, u.picture
+    $allnames = get_all_user_name_fields(true, 'u');
+    $sql = "SELECT l.*, $allnames, u.picture
               FROM {log} l
               LEFT JOIN {user} u ON l.userid = u.id
            $select
