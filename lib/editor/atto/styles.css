@@ -3,6 +3,11 @@ div.editor_atto {
     border: 1px solid #BBB;
 }
 
+.editor_atto + textarea {
+    width: 100%;
+    padding: 0;
+}
+
 div.editor_atto_toolbar {
     display: block;
     background: #F2F2F2;
