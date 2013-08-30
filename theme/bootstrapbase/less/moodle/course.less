@@ -49,6 +49,10 @@
 .section .activity .activityinstance div {
     display: inline-block;
 }
+// IE8 workaround, see MDL-40021
+.ie8 .section .activity .activityinstance img.activityicon {
+    max-width: none;
+}
 .editing .section .activity .activityinstance {
     min-width: 40%;
 }
