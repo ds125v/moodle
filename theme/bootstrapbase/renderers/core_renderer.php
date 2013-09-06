@@ -24,27 +24,29 @@
 
 class theme_bootstrapbase_core_renderer extends core_renderer {
 
-    /*
-     * This renders a notification message.
-     * Uses bootstrap compatible html.
-     */
-    public function notification($message, $classes = 'notifyproblem') {
-        $message = clean_text($message);
-        $type = '';
+    public function alert_info($message) {
+        return html_writer::tag('div', clean_text($message), array('class' => 'alert alert-info'));
+    }
 
-        if ($classes == 'notifyproblem') {
-            $type = 'alert alert-error';
+    public function alert_success($message) {
+        return html_writer::tag('div', clean_text($message), array('class' => 'alert alert-success'));
+    }
+
+    public function alert_warning($message) {
+        return html_writer::tag('div', clean_text($message), array('class' => 'alert alert-warning'));
+    }
+
+    public function alert_danger($message) {
+        return html_writer::tag('div', clean_text($message), array('class' => 'alert alert-error'));
+    }
+
+    public function redirect_message_display($message, $encodedurl, $debugdisableredirect) {
+        $output =  $this->alert_info($message);
+        $output .= '<a class=btn href="'. $encodedurl .'">'. get_string('continue') .'</a>';
+        if ($debugdisableredirect) {
+            $output .= $this->alert_danger('Error output, so disabling automatic redirect.');
         }
-        if ($classes == 'notifysuccess') {
-            $type = 'alert alert-success';
-        }
-        if ($classes == 'notifymessage') {
-            $type = 'alert alert-info';
-        }
-        if ($classes == 'redirectmessage') {
-            $type = 'alert alert-block alert-info';
-        }
-        return "<div class=\"$type\">$message</div>";
+        return $output;
     }
 
     /*

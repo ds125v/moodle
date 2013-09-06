@@ -749,11 +749,7 @@ class core_renderer extends renderer_base {
                 throw new coding_exception('You cannot redirect after the entire page has been generated');
                 break;
         }
-        $output .= $this->notification($message, 'redirectmessage');
-        $output .= '<div class="continuebutton">(<a href="'. $encodedurl .'">'. get_string('continue') .'</a>)</div>';
-        if ($debugdisableredirect) {
-            $output .= '<p><strong>Error output, so disabling automatic redirect.</strong></p>';
-        }
+        $output .= $this->redirect_message_display($message, $encodedurl, $debugdisabledredirect);
         $output .= $this->footer();
         return $output;
     }
@@ -2579,7 +2575,45 @@ EOD;
      * @return string the HTML to output.
      */
     public function notification($message, $classes = 'notifyproblem') {
+        if ($classes == 'notifyproblem') {
+            debugging('notification is deprecated, please use alert_danger instead.', DEBUG_DEVELOPER);
+            return $this->alert_danger($message);
+        }
+        if ($classes == 'notifysuccess') {
+            debugging('notification is deprecated, please use alert_success instead.', DEBUG_DEVELOPER);
+            return $this->alert_success($message);
+        }
+        if ($classes == 'notifymessage') {
+            debugging('notification is deprecated, please use alert_info instead.', DEBUG_DEVELOPER);
+            return $this->alert_info($message);
+        }
+        debugging('notification is deprecated, please use alert_info, alert_success, alert_warning or alert_danger as appropriate.', DEBUG_DEVELOPER);
         return html_writer::tag('div', clean_text($message), array('class' => renderer_base::prepare_classes($classes)));
+    }
+
+    public function alert_info($message) {
+        return html_writer::tag('div', clean_text($message), array('class' => 'notifymessage'));
+    }
+
+    public function alert_success($message) {
+        return html_writer::tag('div', clean_text($message), array('class' => 'notifysuccess'));
+    }
+
+    public function alert_warning($message) {
+        return html_writer::tag('div', clean_text($message), array('class' => 'notifymessage'));
+    }
+
+    public function alert_danger($message) {
+        return html_writer::tag('div', clean_text($message), array('class' => 'notifyproblem'));
+    }
+
+    public function redirect_message_display($message, $encodedurl, $debugdisableredirect) {
+        $output =  html_writer::tag('div', clean_text($message), array('class' => 'redirectmessage'));
+        $output .= '<div class="continuebutton">(<a href="'. $encodedurl .'">'. get_string('continue') .'</a>)</div>';
+        if ($debugdisableredirect) {
+            $output .= $this->alert_danger('Error output, so disabling automatic redirect.');
+        }
+        return $output;
     }
 
     /**
@@ -3394,12 +3428,38 @@ class core_renderer_cli extends core_renderer {
      * @return string A template fragment for a notification
      */
     public function notification($message, $classes = 'notifyproblem') {
-        $message = clean_text($message);
-        if ($classes === 'notifysuccess') {
-            return "++ $message ++\n";
+        if ($classes == 'notifyproblem') {
+            debugging('notification is deprecated, please use alert_danger instead.', DEBUG_DEVELOPER);
+            return $this->alert_danger($message);
         }
-        return "!! $message !!\n";
+        if ($classes == 'notifysuccess') {
+            debugging('notification is deprecated, please use alert_success instead.', DEBUG_DEVELOPER);
+            return $this->alert_success($message);
+        }
+        if ($classes == 'notifymessage') {
+            debugging('notification is deprecated, please use alert_info instead.', DEBUG_DEVELOPER);
+            return $this->alert_info($message);
+        }
+        debugging('notification is deprecated, please use alert_info, alert_success, alert_warning or alert_danger as appropriate.', DEBUG_DEVELOPER);
+        return $this->alert_danger($message);
     }
+
+    public function alert_info($message) {
+        return 'info: '.clean_text($message)."\n";
+    }
+
+    public function alert_success($message) {
+        return '++ '.clean_text($message)." ++\n";
+    }
+
+    public function alert_warning($message) {
+        return '! '.clean_text($message)." !\n";
+    }
+
+    public function alert_danger($message) {
+        return '!! '.clean_text($message)." !!\n";
+    }
+
 }
 
 
