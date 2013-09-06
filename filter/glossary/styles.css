@@ -1,1 +1,7 @@
-#glossaryfilteroverlayprogress {position:fixed;top:50%;width:100%;text-align:center;}
+#glossaryfilteroverlayprogress {
+    position: fixed;
+    top: 50%;
+    width: 100%;
+    text-align: center;
+}
+

@@ -14,9 +14,9 @@
 .path-mod-workshop .mform.frozen #id_rubric-grid-wrapper td,
 .path-mod-workshop .assessmentform.rubric.grid #id_rubric-grid-wrapper th,
 .path-mod-workshop .assessmentform.rubric.grid #id_rubric-grid-wrapper td {
-    border: 1px solid #ddd;
     padding: 5px;
     vertical-align: top;
+    border: 1px solid #ddd;
 }
 
 .path-mod-workshop .mform.frozen #id_rubric-grid-wrapper,
@@ -34,15 +34,15 @@
 }
 
 .path-mod-workshop #id_rubric-grid-wrapper .rubric-grid {
-    margin-left: auto;
     margin-right: auto;
+    margin-left: auto;
 }
 
 .path-mod-workshop .mform.frozen #id_rubric-grid-wrapper .fitem .felement,
 .path-mod-workshop .assessmentform.rubric.grid #id_rubric-grid-wrapper .fitem .felement {
     width: 100%;
-    margin-left: auto;
     margin-right: auto;
+    margin-left: auto;
 }
 
 .path-mod-workshop .mform.frozen #id_rubric-grid-wrapper .fitem .felement {
@@ -85,3 +85,4 @@
     display: block;
     margin-left: 30px;
 }
+

@@ -1,48 +1,47 @@
 /* styles using by feedback */
-.feedback_required_mark {
-    color: #FF0000;
-}
 
-.feedback_switchrequired img{
+.feedback_required_mark {
+    color: #f00;
 }
 
 div.missingrequire {
-	background:#FFAAAA;
+    background: #faa;
 }
 
 span.feedback_info {
-	font-weight:bold;
-}
-div.feedback_item_box_left, div.feedback_item_box_right {
+    font-weight: bold;
 }
 
 div.feedback_depend {
-	background:#DDDDDD;
+    background: #ddd;
 }
 
 div.feedback_complete_depend {
-	background:#EEEEEE;
+    background: #eee;
 }
 
 span.feedback_depend {
-	color:#ff0000;
+    color: #f00;
 }
 
-div.feedback_item_number_left, div.feedback_item_left {
-	float:left;
+div.feedback_item_number_left,
+div.feedback_item_left {
+    float: left;
 }
-div.feedback_item_number_right, div.feedback_item_right {
-	float:right;
+
+div.feedback_item_number_right,
+div.feedback_item_right {
+    float: right;
 }
 
 div.feedback_item_commands_left {
-	float:right;
-	text-align:right;
+    float: right;
+    text-align: right;
 }
 
 div.feedback_item_commands_right {
-	float:left;
-	text-align:left;
+    float: left;
+    text-align: left;
 }
 
 li.feedback_item_check_h_left,
@@ -50,9 +49,9 @@ li.feedback_item_check_h_right,
 li.feedback_item_select_h_left,
 li.feedback_item_select_h_right,
 li.feedback_item_radio_h_left,
-li.feedback_item_radio_h_right{
-	list-style-type:none;
-	display:inline;
+li.feedback_item_radio_h_right {
+    display: inline;
+    list-style-type: none;
 }
 
 li.feedback_item_check_v_left,
@@ -60,47 +59,49 @@ li.feedback_item_check_v_right,
 li.feedback_item_select_v_left,
 li.feedback_item_select_v_right,
 li.feedback_item_radio_v_left,
-li.feedback_item_radio_v_right{
-	list-style-type:none;
-	display:block;
+li.feedback_item_radio_v_right {
+    display: block;
+    list-style-type: none;
 }
 
-div.feedback_items label{
+div.feedback_items label {
     display: inline;
 }
 
 div.feedback_item_captcha_text_left,
 div.feedback_item_captcha_img_left {
-	display:inline;
-	margin: 5px;
+    display: inline;
+    margin: 5px;
 }
+
 div.feedback_item_captcha_text_right,
 div.feedback_item_captcha_img_right {
-	display:inline;
-	margin: 5px;
+    display: inline;
+    margin: 5px;
 }
 
 hr.feedback_pagebreak {
-	height:8px;
-	color:#aaaaaa;
-	background-color:#aaaaaa;
-	border:0px;
+    height: 8px;
+    color: #aaa;
+    background-color: #aaa;
+    border: 0;
 }
 
 .drag_target_active {
-        opacity: .25;
+    opacity: .25;
 }
 
 .drag_item_active {
-        opacity: .5;
+    opacity: .5;
 }
 
 ul#feedback_draglist {
-        list-style: none;
-        padding: 0;
-        margin: 0;
+    padding: 0;
+    margin: 0;
+    list-style: none;
 }
 
 div#feedback_dragarea {
-    width:95%;
+    width: 95%;
 }
+

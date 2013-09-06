@@ -3,7 +3,6 @@ div.gradingnavigation div {
     margin-left: 2em;
 }
 
-
 div.submissionstatustable,
 div.submissionfull,
 div.submissionlinks,
@@ -12,7 +11,6 @@ div.feedback,
 div.gradingsummary {
     margin-bottom: 5em;
 }
-
 
 div.submissionstatus .generaltable,
 div.submissionlinks .generaltable,
@@ -23,7 +21,9 @@ div.gradingsummary .generaltable {
     width: 100%;
 }
 
-#page-mod-assign-view table.generaltable table td { border: 0px none; }
+#page-mod-assign-view table.generaltable table td {
+    border: 0 none;
+}
 
 .gradingsummarytable,
 .feedbacktable,
@@ -37,93 +37,127 @@ div.submissionsummarytable table tbody tr td.c0 {
 }
 
 .submittedlate {
-    color: red;
     font-weight: 900;
+    color: red;
 }
 
-.jsenabled .gradingoptionsform .fsubmit {display: none;}
-.jsenabled .gradingtable .c1 select {display: none;}
-.quickgradingform .mform fieldset { margin: 0px; padding: 0px; }
-.gradingbatchoperationsform .mform fieldset { margin: 0px; padding: 0px; }
+.jsenabled .gradingoptionsform .fsubmit {
+    display: none;
+}
+
+.jsenabled .gradingtable .c1 select {
+    display: none;
+}
+
+.quickgradingform .mform fieldset {
+    padding: 0;
+    margin: 0;
+}
+
+.gradingbatchoperationsform .mform fieldset {
+    padding: 0;
+    margin: 0;
+}
 
 td.submissionstatus,
 div.submissionstatus,
 a:link.submissionstatus {
-    color: black;
+    color: #000;
     background-color: #efefef;
 }
 
 td.submissionstatusdraft,
 div.submissionstatusdraft,
 a:link.submissionstatusdraft {
-    color: black;
+    color: #000;
     background-color: #efefcf;
 }
 
 td.submissionstatussubmitted,
 div.submissionstatussubmitted,
 a:link.submissionstatussubmitted {
-    color: black;
+    color: #000;
     background-color: #cfefcf;
 }
 
-
 td.submissionlocked,
 div.submissionlocked {
-    color: black;
+    color: #000;
     background-color: #efefcf;
 }
 
 td.submissionreopened,
 div.submissionreopened {
-    color: black;
+    color: #000;
     background-color: #efefef;
 }
 
 td.submissiongraded,
 div.submissiongraded {
-    color: black;
+    color: #000;
     background-color: #cfefcf;
 }
 
 td.submissionnotgraded,
 div.submissionnotgraded {
-    color: black;
+    color: #000;
     background-color: #efefef;
 }
 
 td.latesubmission,
 a:link.latesubmission,
 div.latesubmission {
-    color: black;
+    color: #000;
     background-color: #efcfcf;
 }
 
 td.earlysubmission,
 div.earlysubmission {
-    color: black;
+    color: #000;
     background-color: #cfefcf;
 }
 
-.gradingtable .c0 { display: none; }
-.jsenabled .gradingtable .c0 { display: table-cell; }
-.gradingbatchoperationsform { display: none; }
-.jsenabled .gradingbatchoperationsform { display: block; }
+.gradingtable .c0 {
+    display: none;
+}
 
-.gradingtable tr.selectedrow td { background-color: #ffeecc; }
-.gradingtable tr.unselectedrow td { background-color: white; }
+.jsenabled .gradingtable .c0 {
+    display: table-cell;
+}
 
-.gradingtable .c0 div.selectall {margin-left: 7px;}
+.gradingbatchoperationsform {
+    display: none;
+}
+
+.jsenabled .gradingbatchoperationsform {
+    display: block;
+}
+
+.gradingtable tr.selectedrow td {
+    background-color: #fec;
+}
+
+.gradingtable tr.unselectedrow td {
+    background-color: #fff;
+}
+
+.gradingtable .c0 div.selectall {
+    margin-left: 7px;
+}
 
 .gradingtable .yui3-menu ul {
-    margin: 0px;
+    margin: 0;
 }
 
 .gradingtable .yui3-menu-label {
-    padding-left: 0px;
+    padding-left: 0;
     line-height: 12px;
 }
-.gradingtable .yui3-menu-label img { padding: 0 3px; }
+
+.gradingtable .yui3-menu-label img {
+    padding: 0 3px;
+}
+
 .gradingtable .yui3-menu li {
     list-style-type: none;
 }
@@ -133,12 +167,12 @@ div.earlysubmission {
 }
 
 .gradingtable .yui3-menu .yui3-menu-content {
-    border: 0px;
     padding-top: 0;
+    border: 0;
 }
 
 #page-mod-assign-view div.gradingtable tr .quickgrademodified {
-    background-color: #FFCC99;
+    background-color: #fc9;
 }
 
 td.submissioneditable {
@@ -146,8 +180,8 @@ td.submissioneditable {
 }
 
 .expandsummaryicon {
-    cursor: pointer;
     display: none;
+    cursor: pointer;
 }
 
 .jsenabled .expandsummaryicon {
@@ -171,8 +205,8 @@ td.submissioneditable {
 #page-mod-assign-view .previousfeedbackwarning {
     font-size: 140%;
     font-weight: bold;
-    text-align: center;
     color: #500;
+    text-align: center;
 }
 
 #page-mod-assign-view .submissionhistory {
@@ -202,8 +236,8 @@ td.submissioneditable {
 
 .jsenabled .mod-assign-history-link {
     display: block;
-    cursor: pointer;
     margin-bottom: 7px;
+    cursor: pointer;
 }
 
 .jsenabled .mod-assign-history-link h4 {
@@ -224,15 +258,18 @@ td.submissioneditable {
 }
 
 .jsenabled .mod-assign-history-link-open {
-    padding: 0 5px 0 20px; background: url([[pix:t/expanded]]) 2px center no-repeat;
+    padding: 0 5px 0 20px;
+    background: url([[pix:t/expanded]]) 2px center no-repeat;
 }
 
 .jsenabled .mod-assign-history-link-closed {
-    padding: 0 5px 0 20px; background: url([[pix:t/collapsed]]) 2px center no-repeat;
+    padding: 0 5px 0 20px;
+    background: url([[pix:t/collapsed]]) 2px center no-repeat;
 }
 
 .dir-rtl.jsenabled .mod-assign-history-link-closed {
-    padding: 0 20px 0 5px; background: url([[pix:t/collapsed_rtl]]) 2px center no-repeat;
+    padding: 0 20px 0 5px;
+    background: url([[pix:t/collapsed_rtl]]) 2px center no-repeat;
 }
 
 #page-mod-assign-view .submithelp {
@@ -249,8 +286,8 @@ td.submissioneditable {
     text-align: center;
 }
 
-
 #page-mod-assign-view .submissionsummarytable .c0,
 #page-mod-assign-view .mod-assign-history-panel .c0 {
     width: 150px;
 }
+

@@ -13,7 +13,8 @@
 
  You should have received a copy of the GNU General Public License
  along with Moodle. If not, see <http://www.gnu.org/licenses/>.
-*/ /**
+*/
+/**
  * Wiki module style sheet
  *
  * @package mod-wiki-2.0
@@ -28,11 +29,12 @@
  *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 .wiki_contentbox {
     width: 80%;
-    margin: auto;
     min-width: 200px;
     min-height: 100px;
+    margin: auto;
 }
 
 .wiki_editor {
@@ -62,22 +64,22 @@
 }
 
 .emptycomments {
-    color: red;
     display: inline;
+    color: red;
 }
 
 .wiki-toc {
-    border: 1px solid #BBB;
-    background: #EEE;
-    margin: 16px;
     padding: 8px;
+    margin: 16px;
+    background: #eee;
+    border: 1px solid #bbb;
 }
 
 .wiki-toc-title {
-    color: #666;
     font-size: 1.1em;
-    font-variant: small-caps;
+    color: #666;
     text-align: center;
+    font-variant: small-caps;
 }
 
 .wiki-toc-section {
@@ -94,13 +96,13 @@
 }
 
 .wiki_form-button {
-    margin-left: 0%;
+    margin-left: 0;
 }
 
 .wiki-form-center {
-    text-align: center;
-    margin: auto;
     width: 320px;
+    margin: auto;
+    text-align: center;
 }
 
 .wiki-upload-table {
@@ -113,20 +115,20 @@
 }
 
 .wiki-upload-table h3 {
-    margin: 4px 0px;
+    margin: 4px 0;
     text-align: center;
 }
 
 .wiki-upload-section {
-    border: 1px solid #EEE;
     width: 400px;
     margin: 8px auto;
+    border: 1px solid #eee;
 }
 
 .wiki-upload-section legend {
-    font-weight: bold;
-    font-size: 0.9em;
     margin-left: 16px;
+    font-size: 0.9em;
+    font-weight: bold;
 }
 
 .wiki-tags {
@@ -142,18 +144,21 @@
 }
 
 .wiki_modifieduser img {
-    border: thin solid black;
+    border: thin solid #000;
 }
 
-.wiki_restore_yes, .wiki_deletecomment_yes {
+.wiki_restore_yes,
+.wiki_deletecomment_yes {
     float: left;
 }
 
-.wiki_restore_no, .wiki_deletecomment_no {
+.wiki_restore_no,
+.wiki_deletecomment_no {
     float: right;
 }
 
-.wiki_restoreform, .wiki_deletecommentform {
+.wiki_restoreform,
+.wiki_deletecommentform {
     width: 10%;
     margin: auto;
 }
@@ -162,9 +167,10 @@
     float: left;
 }
 
-.wiki_diffuserleft,.wiki_diffuserright {
-    font-weight: normal;
+.wiki_diffuserleft,
+.wiki_diffuserright {
     padding-top: 1%;
+    font-weight: normal;
 }
 
 .wiki_diffuserleft {
@@ -183,12 +189,16 @@
     font-weight: normal;
 }
 
-.wiki_restore,.wiki_diffview,.wiki_difftime,.wiki_headingtime {
+.wiki_restore,
+.wiki_diffview,
+.wiki_difftime,
+.wiki_headingtime {
     font-size: 0.8em;
     font-weight: normal;
 }
 
-.wiki_difftime,.wiki_headingtime {
+.wiki_difftime,
+.wiki_headingtime {
     font-style: oblique;
     text-align: center;
 }
@@ -207,15 +217,16 @@
     margin-right: 5%;
 }
 
-.wiki_diff_old,.wiki_diff_new {
+.wiki_diff_old,
+.wiki_diff_new {
     float: left;
-    min-width: 200px;
     width: 40%;
+    min-width: 200px;
 }
 
 .wiki_difftable td {
-    width: 50%;
     float: left;
+    width: 50%;
 }
 
 .wiki_histdate {
@@ -227,29 +238,30 @@
 }
 
 .ouw_deleted {
-    background: #FFFFAA;
     color: red;
     text-decoration: line-through;
+    background: #ffa;
 }
 
 .ouw_added {
-    background: #CCFFCC;
     color: red;
+    background: #cfc;
 }
 
-a.wiki_newentry:link, a.wiki_newentry:visited {
-    color: red;
+a.wiki_newentry:link,
+a.wiki_newentry:visited {
     font-style: italic;
+    color: red;
 }
 
 .wiki_newentry a {
-    color: red;
     font-style: italic;
+    color: red;
 }
 
 #intro.generalbox {
-    margin-top: 10px;
     padding: 5px;
+    margin-top: 10px;
 }
 
 .wiki_navigation_container {
@@ -291,16 +303,16 @@ a.wiki_newentry:link, a.wiki_newentry:visited {
 }
 
 a.wiki_edit_section {
-    font-size: 0.6em;
-    vertical-align: top;
     position: relative;
     float: right;
+    font-size: 0.6em;
+    vertical-align: top;
 }
 
 .midpad {
-    text-align: center;
     margin-top: 0.4em;
     margin-bottom: 0.4em;
+    text-align: center;
 }
 
 .block_wiki_search ul {
@@ -309,11 +321,12 @@ a.wiki_edit_section {
 }
 
 .wiki-attachment:before {
-    content: url("/mod/wiki/pix/attachment.png");
     padding-right: 2px;
+    content: url("/mod/wiki/pix/attachment.png");
 }
 
 /** Print CSS */
+
 #wiki_printable_content {
     text-align: left;
 }
@@ -323,7 +336,7 @@ a.wiki_edit_section {
 }
 
 #wiki_printable_content a {
-    color: black;
+    color: #000;
 }
 
 #wiki_printable_title {
@@ -342,29 +355,53 @@ a.wiki_edit_section {
 }
 
 .wiki_grayline {
-    color: gray
+    color: #808080;
 }
 
-.wikisearchresults{
-    padding-left: 50px;
+.wikisearchresults {
     padding-top: 20px;
+    padding-left: 50px;
 }
 
-.wiki-diff-container {width:95%;margin:10px auto;}
-.wiki-diff-container .wiki-diff-leftside,
-.wiki-diff-container .wiki-diff-rightside {width:49.5%;margin:0;padding:0;float:left;}
-.wiki-diff-container .wiki-diff-rightside {margin-left:1%;}
-.wiki-diff-container .wiki-diff-heading,
-.wiki-diff-container .no-overflow {padding:10px;border:1px solid #DDD;}
-.wiki-diff-container .wiki-diff-rightside .wiki_diffversion {text-align:right;}
+.wiki-diff-container {
+    width: 95%;
+    margin: 10px auto;
+}
 
-.wikieditor-toolbar img{
+.wiki-diff-container .wiki-diff-leftside,
+.wiki-diff-container .wiki-diff-rightside {
+    float: left;
+    width: 49.5%;
+    padding: 0;
+    margin: 0;
+}
+
+.wiki-diff-container .wiki-diff-rightside {
+    margin-left: 1%;
+}
+
+.wiki-diff-container .wiki-diff-heading,
+.wiki-diff-container .no-overflow {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.wiki-diff-container .wiki-diff-rightside .wiki_diffversion {
+    text-align: right;
+}
+
+.wikieditor-toolbar img {
     width: 22px;
     height: 22px;
     vertical-align: middle;
 }
 
 .path-mod-wiki .printicon {
-    background: url([[pix:t/print]]) no-repeat scroll 2px center transparent; padding-left: 20px;
+    padding-left: 20px;
+    background: url([[pix:t/print]]) no-repeat scroll 2px center transparent;
 }
-#page-mod-wiki-prettyview .displayprinticon {text-align: right;}
+
+#page-mod-wiki-prettyview .displayprinticon {
+    text-align: right;
+}
+

@@ -3,7 +3,7 @@
  */
 
 .path-mod-workshop .manual-allocator .allocations {
-    margin: 0px auto;
+    margin: 0 auto;
 }
 
 .path-mod-workshop .manual-allocator .allocations .r0 {
@@ -32,12 +32,12 @@
 }
 
 .path-mod-workshop .manual-allocator .allocations tr td {
-    vertical-align: top;
     padding: 5px;
+    vertical-align: top;
 }
 
 .path-mod-workshop .manual-allocator .allocations tr td ul {
-    margin: 0px;
+    margin: 0;
 }
 
 .path-mod-workshop .manual-allocator .allocations tr td ul li {
@@ -45,19 +45,20 @@
 }
 
 .path-mod-workshop .manual-allocator .allocations tr td.peer {
-    border-left: 1px solid #ccc;
     border-right: 1px solid #ccc;
+    border-left: 1px solid #ccc;
 }
 
 .path-mod-workshop .manual-allocator .allocations .reviewedby .info,
 .path-mod-workshop .manual-allocator .allocations .peer .info,
 .path-mod-workshop .manual-allocator .allocations .reviewerof .info {
     font-size: 80%;
-    color: #888;
     font-style: italic;
+    color: #888;
 }
 
 .path-mod-workshop .manual-allocator .allocations .peer .submission {
-    font-size: 90%;
     margin-top: 1em;
+    font-size: 90%;
 }
+
