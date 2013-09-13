@@ -24,28 +24,38 @@
 
 class theme_bootstrapbase_core_renderer extends core_renderer {
 
-    /*
-     * This renders a notification message.
-     * Uses bootstrap compatible html.
-     */
     public function notification($message, $classes = 'notifyproblem') {
-        $message = clean_text($message);
-        $type = '';
-
         if ($classes == 'notifyproblem') {
-            $type = 'alert alert-error';
+            return $this->alert_danger($message);
         }
         if ($classes == 'notifysuccess') {
-            $type = 'alert alert-success';
+            return $this->alert_success($message);
         }
         if ($classes == 'notifymessage') {
-            $type = 'alert alert-info';
+            return $this->alert_info($message);
         }
         if ($classes == 'redirectmessage') {
-            $type = 'alert alert-block alert-info';
+            return $this->alert_info($message);
         }
-        return "<div class=\"$type\">$message</div>";
+        return html_writer::tag('div', clean_text($message), array('class' => renderer_base::prepare_classes($classes)));
     }
+
+    public function alert_info($message) {
+        return html_writer::tag('div', clean_text($message), array('class' => 'alert alert-info'));
+    }
+
+    public function alert_success($message) {
+        return html_writer::tag('div', clean_text($message), array('class' => 'alert alert-success'));
+    }
+
+    public function alert_warning($message) {
+        return html_writer::tag('div', clean_text($message), array('class' => 'alert alert-warning'));
+    }
+
+    public function alert_danger($message) {
+        return html_writer::tag('div', clean_text($message), array('class' => 'alert alert-error'));
+    }
+
 
     /*
      * This renders the navbar.
