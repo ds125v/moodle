@@ -528,7 +528,6 @@ border-width:0;
 table#user-grades td.userfield,
 table#user-grades th,
 .path-grade-report-grader div.gradeparent,
-.path-grade-report-grader .ie6 form,
 table#user-grades td.ajax {
 text-align:left;
 }
@@ -536,7 +535,6 @@ text-align:left;
 .dir-rtl table#user-grades td.userfield,
 .dir-rtl table#user-grades th,
 .path-grade-report-grader.dir-rtl  div.gradeparent,
-.path-grade-report-grader.dir-rtl  .ie6 form,
 .dir-rtl table#user-grades td.ajax {
 text-align:right;
 }
@@ -630,14 +628,4 @@ height:2.1em;
 
 .path-grade-report-grader.ie div.left_scroller td {
 height:4.5em;
-}
-
-.path-grade-report-grader.ie6 div.right_scroller {
-margin-top:4em;
-width:auto;
-position:absolute;
-}
-
-.path-grade-report-grader.ie6 .excludedfloater {
-font-size:7px;
 }
