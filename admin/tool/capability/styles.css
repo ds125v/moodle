@@ -13,14 +13,14 @@
     text-indent:-1.45em;
 
     -webkit-transform-origin: top left;
-    -moz-transform-origin:    top left;
     -ms-transform-origin:     top left;
     -o-transform-origin:      top left;
+    transform-origin:         top left;
 
     -webkit-transform: rotate(315deg);
-    -moz-transform:    rotate(315deg);
     -ms-transform:     rotate(315deg);
     -o-transform:      rotate(315deg);
+    transform:         rotate(315deg);
 }
 .path-admin-tool-capability .comparisontable tbody th {background-color:#EEE;text-align:right;border:1px solid #DFDFDF;}
 .path-admin-tool-capability .comparisontable tbody th span {display:block;color:#666;font-size:80%;}

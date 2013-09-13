@@ -294,7 +294,7 @@ span.editinstructions {
     color: @infoText;
     text-decoration: none;
     z-index: 9999;
-    .box-shadow(2px 2px 5px 1px #ccc);
+    box-shadow: 2px 2px 5px 1px #ccc;
     border: 1px solid @infoBorder;
 }
 .dir-rtl span.editinstructions {
@@ -313,8 +313,9 @@ span.editinstructions {
     color: @infoText;
     position: absolute;
     z-index: 9999;
-    .box-shadow(2px 2px 5px 1px #ccc);
-    .border-bottom-radius(8px);
+    box-shadow: 2px 2px 5px 1px #ccc;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
     z-index: 0;
 }
 .dndupload-preview {
@@ -374,7 +375,7 @@ span.editinstructions {
 .coursebox {
     margin-bottom: 15px;
     border: 1px dotted #ddd;
-    .border-radius(4px);
+    border-radius: 4px;
     padding: 5px;
 }
 
@@ -586,7 +587,7 @@ span.editinstructions {
 #page-course-index-category .generalbox.info {
     margin-bottom: 15px;
     border: 1px dotted #ddd;
-    .border-radius(4px);
+    border-radius: 4px;
     padding: 5px;
 }
 

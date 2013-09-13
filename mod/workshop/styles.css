@@ -502,8 +502,6 @@
     margin: 1em;
     padding: 2em;
     display: inline-block;
-    -webkit-border-radius: 15px;
-    -moz-border-radius: 15px;
     border-radius: 15px;
 }
 

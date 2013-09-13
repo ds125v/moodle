@@ -48,7 +48,8 @@
     color: #333;
     letter-spacing: 1px;
     text-shadow: 1px 1px 1px #fff;
-    .border-top-radius(10px);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
     border: 1px solid #ccc;
     border-bottom: 1px solid #bbb;
     #gradient > .vertical(#fff, #ccc);
@@ -57,10 +58,10 @@
     font-size: 12px;
     color: #333;
     background: #F2F2F2;
-    .border-radius(10px);
+    border-radius: 10px;
     border: 1px solid #ccc;
     border-top: 0 none;
-    .box-shadow(5px 5px 20px 0 #666);
+    box-shadow: 5px 5px 20px 0 #666;
 }
 //#qtypechoicecontainer
 #chooseqtype {
@@ -86,7 +87,7 @@
 }
 #chooseqtype .selected {
     background-color: #fff;
-    .box-shadow(0px 0 10px 0 #ccc);
+    box-shadow: 0px 0 10px 0 #ccc;
 }
 #chooseqtype .instruction,
 #chooseqtype .qtypesummary {
@@ -163,7 +164,7 @@ body.path-question-type .fitem_fgroup .accesshide {
     margin-bottom: 1.8em;
     background-color: @grayLighter;
     border: 1px solid darken(spin(@grayLighter, -10), 7%);
-    .border-radius(2px);
+    border-radius: 2px;
 }
 .que h2.no {
     margin: 0;
@@ -257,11 +258,11 @@ body.path-question-type .fitem_fgroup .accesshide {
     color: @textColor;
     background-color: @backgroundColor;
     border-color: @borderColor;
-    .box-shadow(inset 0 1px 1px rgba(0,0,0,.075)); // Redeclare so transitions work
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075); // Redeclare so transitions work
     &:focus {
       border-color: darken(@borderColor, 10%);
       @shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 6px lighten(@borderColor, 20%);
-      .box-shadow(@shadow);
+      box-shadow: @shadow;
     }
 }
 
@@ -338,7 +339,8 @@ body.path-question-type .fitem_fgroup .accesshide {
     color: #444;
     text-shadow: none;
     padding: 3px;
-    .border-top-radius(4px);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
     margin: 0 -10px 0 -10px;
     padding: 2px 10px 2px 10px;
     background: transparent; /* Old browsers */
@@ -409,7 +411,7 @@ body.path-question-type .fitem_fgroup .accesshide {
 
 #page-mod-quiz-edit div.quizpage .pagecontent {
     border: 1px solid #ddd;
-    .border-radius(2px);
+    border-radius: 2px;
     overflow: hidden;
 }
 
@@ -424,7 +426,7 @@ body.path-question-type .fitem_fgroup .accesshide {
 #page-mod-quiz-edit div.editq div.question div.content {
     background-color: @bodyBackground;
     border: 1px solid #ddd;
-    .border-radius(2px);
+    border-radius: 2px;
     overflow: hidden;
 }
 
