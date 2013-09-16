@@ -4481,7 +4481,7 @@ class assign {
      *
      * @return bool Return false if the submission was not submitted.
      */
-    public function submit_for_grading() {
+    public function submit_for_grading($data) {
         global $USER;
 
         // Need submit permission to submit an assignment.
@@ -4496,6 +4496,10 @@ class assign {
         }
 
         if (!$this->submissions_open($USER->id)) {
+            return false;
+        }
+
+        if ($instance->requiresubmissionstatement && !$data->submissionstatement) {
             return false;
         }
 
@@ -4515,7 +4519,7 @@ class assign {
                 $completion->update_state($this->get_course_module(), COMPLETION_COMPLETE, $USER->id);
             }
 
-            if (isset($data->submissionstatement)) {
+            if (!empty($data->submissionstatement)) {
                 $logmessage = get_string('submissionstatementacceptedlog',
                                          'mod_assign',
                                          fullname($USER));
@@ -4580,7 +4584,7 @@ class assign {
             if ($mform->get_data() == false) {
                 return false;
             }
-            return $this->submit_for_grading();
+            return $this->submit_for_grading($data);
         }
         return true;
     }
