@@ -149,6 +149,10 @@ class tool_generator_site_backend extends tool_generator_backend {
             $options[] = '--quiet';
         }
 
+        if ($this->filesizelimit) {
+            $options[] = '--filesizelimit="' . $this->filesizelimit . '"';
+        }
+
         // Extend options.
         $optionstoextend = array(
             'fixeddataset' => 'fixeddataset',
