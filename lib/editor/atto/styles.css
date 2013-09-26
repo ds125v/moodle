@@ -1,7 +1,7 @@
 div.editor_atto {
     background-color: white;
     border: 1px solid #BBB;
-    padding: 4px;
+    width: 100%;
 }
 
 .editor_atto + textarea {
