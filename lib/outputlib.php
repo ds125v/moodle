@@ -285,6 +285,12 @@ class theme_config {
      */
     public $doctype = 'html5';
 
+    /**
+     * @var string Space separated string of standard classnames added
+     * to all data tables
+     */
+    private $tableclasses = "table";
+
     //==Following properties are not configurable from theme config.php==
 
     /**
@@ -356,11 +362,6 @@ class theme_config {
      */
     private $usesvg = null;
 
-    /**
-     * @var string Space seperated string of standard classnames added
-     * to all data tables
-     */
-    private $tableclasses = "table";
 
     /**
      * Load the config.php file for a particular theme, and return an instance
@@ -430,7 +431,7 @@ class theme_config {
         $configurable = array('parents', 'sheets', 'parents_exclude_sheets', 'plugins_exclude_sheets', 'javascripts', 'javascripts_footer',
                               'parents_exclude_javascripts', 'layouts', 'enable_dock', 'enablecourseajax', 'supportscssoptimisation',
                               'rendererfactory', 'csspostprocess', 'editor_sheets', 'rarrow', 'larrow', 'hidefromselector', 'doctype',
-                              'yuicssmodules', 'blockrtlmanipulations');
+                              'yuicssmodules', 'blockrtlmanipulations', 'tableclasses');
 
         foreach ($config as $key=>$value) {
             if (in_array($key, $configurable)) {
