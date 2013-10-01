@@ -357,6 +357,12 @@ class theme_config {
     private $usesvg = null;
 
     /**
+     * @var string Space seperated string of standard classnames added
+     * to all data tables
+     */
+    private $tableclasses = "table";
+
+    /**
      * Load the config.php file for a particular theme, and return an instance
      * of this class. (That is, this is a factory method.)
      *

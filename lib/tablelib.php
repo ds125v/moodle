@@ -492,11 +492,11 @@ class flexible_table {
 
         // Always introduce the "flexible" class for the table if not specified
         if (empty($this->attributes)) {
-            $this->attributes['class'] = 'flexible';
+            $this->attributes['class'] = 'flexible table';
         } else if (!isset($this->attributes['class'])) {
-            $this->attributes['class'] = 'flexible';
+            $this->attributes['class'] = 'flexible table';
         } else if (!in_array('flexible', explode(' ', $this->attributes['class']))) {
-            $this->attributes['class'] = trim('flexible ' . $this->attributes['class']);
+            $this->attributes['class'] = trim('flexible table ' . $this->attributes['class']);
         }
     }
 
@@ -1313,7 +1313,7 @@ class table_sql extends flexible_table {
         parent::__construct($uniqueid);
         // some sensible defaults
         $this->set_attribute('cellspacing', '0');
-        $this->set_attribute('class', 'generaltable generalbox');
+        $this->set_attribute('class', 'table generaltable generalbox');
     }
 
     /**
