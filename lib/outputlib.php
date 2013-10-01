@@ -289,7 +289,7 @@ class theme_config {
      * @var string Space separated string of standard classnames added
      * to all data tables
      */
-    private $tableclasses = "table";
+    public $tableclasses = "table";
 
     //==Following properties are not configurable from theme config.php==
 
