@@ -6985,7 +6985,7 @@ class admin_setting_managerepository extends admin_setting {
                 // Display up/down link
                 $updown = '';
                 // Should be done with CSS instead.
-                $spacer = $OUTPUT->spacer(array('height' => 15, 'width' => 15, 'class' => 'smallicon'));
+                $spacer = $OUTPUT->spacer(array('height' => 15, 'width' => 15, 'class' => 'iconsmall'));
 
                 if ($updowncount > 1) {
                     $updown .= "<a href=\"$this->baseurl&amp;action=moveup&amp;repos=".$typename."\">";

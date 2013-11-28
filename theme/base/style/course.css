@@ -446,7 +446,7 @@ input.titleeditor { vertical-align: text-bottom; }
 
 #category-listing .course-count {color:#a1a1a8;margin-right:2em;min-width:3.5em;display:inline-block;}
 #category-listing .listitem.collapsed > ul.ml {display: none;}
-#category-listing .course-count .smallicon {width:0.8em;height:0.8em;margin:0 0.3em;}
+#category-listing .course-count .iconsmall {width:0.8em;height:0.8em;margin:0 0.3em;}
 
 #category-listing .listitem > div > .ba-checkbox {vertical-align:middle;width:2.2em;text-align:center;margin:-1px 0;padding-top:2px;margin-right:0.5em;}
 .dir-rtl #category-listing .listitem > div > .ba-checkbox {margin-left:0.5em;margin-right:0.5em;}
