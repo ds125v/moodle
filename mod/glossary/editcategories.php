@@ -121,7 +121,7 @@ if ( $hook >0 ) {
             $DB->delete_records("glossary_entries_categories", array("categoryid"=>$hook));
             $DB->delete_records("glossary_categories", array("id"=>$hook));
 
-            echo $OUTPUT->box_start('generalbox boxaligncenter errorboxcontent boxwidthnarrow');
+            echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthnarrow');
             echo "<div>" . get_string("categorydeleted","glossary") ."</div>";
             echo $OUTPUT->box_end();
 
@@ -131,7 +131,7 @@ if ( $hook >0 ) {
         } else {
             echo $OUTPUT->heading(format_string(get_string("delete"). " " . get_string("category","glossary")), 3);
 
-            echo $OUTPUT->box_start('generalbox boxaligncenter errorboxcontent boxwidthnarrow');
+            echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthnarrow');
             echo "<div class=\"boxaligncenter deletecatconfirm\">".format_string($category->name, true, $fmtoptions)."<br/>";
 
             $num_entries = $DB->count_records("glossary_entries_categories", array("categoryid"=>$category->id));
@@ -175,7 +175,7 @@ if ( $hook >0 ) {
         if ( $dupcategory ) {
         echo "<h3 class=\"main\">" . get_string("add"). " " . get_string("category","glossary"). "</h3>";
 
-            echo $OUTPUT->box_start('generalbox boxaligncenter errorboxcontent boxwidthnarrow');
+            echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthnarrow');
             echo "<div>" . get_string("duplicatecategory","glossary") ."</div>";
             echo $OUTPUT->box_end();
 

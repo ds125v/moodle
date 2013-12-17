@@ -120,11 +120,8 @@ require('tabs.php');
 ///////////////////////////////////////////////////////////////////////////
 echo $OUTPUT->heading($strdeletefeedback, 3);
 if ($shoulddelete == 1) {
-
-    echo $OUTPUT->box_start('generalbox errorboxcontent boxaligncenter boxwidthnormal');
-    echo html_writer::tag('p', get_string('confirmdeletetemplate', 'feedback'), array('class' => 'bold'));
+    echo $OUTPUT->notification(get_string('confirmdeletetemplate', 'feedback'), 'notifyproblem');
     $mform->display();
-    echo $OUTPUT->box_end();
 } else {
     //first we get the own templates
     $templates = feedback_get_template_list($course, 'own');

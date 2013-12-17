@@ -80,11 +80,9 @@ echo $OUTPUT->header();
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 echo $OUTPUT->heading(format_string($feedback->name));
-echo $OUTPUT->box_start('generalbox errorboxcontent boxaligncenter boxwidthnormal');
-echo html_writer::tag('p', get_string('confirmdeleteitem', 'feedback'), array('class' => 'bold'));
-print_string('relateditemsdeleted', 'feedback');
+$message = get_string('confirmdeleteitem', 'feedback') . ' ' .get_string('relateditemsdeleted', 'feedback');
+echo $OUTPUT->notification($message, 'notifyproblem');
 $mform->display();
-echo $OUTPUT->box_end();
 
 echo $OUTPUT->footer();
 

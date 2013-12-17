@@ -185,7 +185,7 @@ $grandtotal = $completion->get_num_tracked_users('', array(), $group);
 
 // If no users in this course what-so-ever
 if (!$grandtotal) {
-    echo $OUTPUT->container(get_string('err_nousers', 'completion'), 'errorbox errorboxcontent');
+    echo $OUTPUT->notification(get_string('err_nousers', 'completion'), 'notifyproblem');
     echo $OUTPUT->footer();
     exit;
 }

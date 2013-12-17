@@ -98,10 +98,7 @@ echo $OUTPUT->header();
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 echo $OUTPUT->heading(format_string($feedback->name));
-echo $OUTPUT->box_start('generalbox errorboxcontent boxaligncenter boxwidthnormal');
-echo html_writer::tag('p', get_string('confirmdeleteentry', 'feedback'), array('class' => 'bold'));
+echo $OUTPUT->notification(get_string('confirmdeleteentry', 'feedback'), 'notifyproblem');
 $mform->display();
-echo $OUTPUT->box_end();
-
 
 echo $OUTPUT->footer();

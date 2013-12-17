@@ -162,14 +162,14 @@ if ($csv && $grandtotal && count($activities)>0) { // Only show CSV if there are
 }
 
 if (count($activities)==0) {
-    echo $OUTPUT->container(get_string('err_noactivities', 'completion'), 'errorbox errorboxcontent');
+    echo $OUTPUT->notification(get_string('err_noactivities', 'completion'), 'notifyproblem');
     echo $OUTPUT->footer();
     exit;
 }
 
 // If no users in this course what-so-ever
 if (!$grandtotal) {
-    echo $OUTPUT->container(get_string('err_nousers', 'completion'), 'errorbox errorboxcontent');
+    echo $OUTPUT->notification(get_string('err_nousers', 'completion'), 'notifyproblem');
     echo $OUTPUT->footer();
     exit;
 }

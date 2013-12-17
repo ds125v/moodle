@@ -402,7 +402,7 @@ class page_wiki_edit extends page_wiki {
 
         $this->print_pagetitle();
 
-        print '<noscript>' . $OUTPUT->box(get_string('javascriptdisabledlocks', 'wiki'), 'errorbox') . '</noscript>';
+        print '<noscript>' . $OUTPUT->notification(get_string('javascriptdisabledlocks', 'wiki'), 'notifyproblem') . '</noscript>';
     }
 
     function print_content() {
@@ -522,7 +522,7 @@ class page_wiki_edit extends page_wiki {
         $versionnumber = $version->version;
         if ($this->versionnumber >= 0) {
             if ($version->version != $this->versionnumber) {
-                print $OUTPUT->box(get_string('wrongversionlock', 'wiki'), 'errorbox');
+                print $OUTPUT->notification(get_string('wrongversionlock', 'wiki'), 'notifyproblem');
                 $versionnumber = $this->versionnumber;
             }
         }

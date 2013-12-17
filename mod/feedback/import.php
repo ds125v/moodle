@@ -106,11 +106,11 @@ require('tabs.php');
 echo $OUTPUT->heading(get_string('import_questions', 'feedback'), 3);
 
 if (isset($importerror->msg) AND is_array($importerror->msg)) {
-    echo $OUTPUT->box_start('generalbox errorboxcontent boxaligncenter');
+    $message = '';
     foreach ($importerror->msg as $msg) {
-        echo $msg.'<br />';
+        $message .= "<p>$msg</p>";
     }
-    echo $OUTPUT->box_end();
+    echo $OUTPUT->notification($message, 'notifyproblem');
 }
 
 $mform->display();

@@ -1521,7 +1521,7 @@ class core_admin_renderer extends plugin_renderer_base {
 
         // Finally, if any error has happened, print the summary box
         if (!$result) {
-            $output .= $this->box(get_string('environmenterrortodo', 'admin'), 'environmentbox errorbox');
+            $output .= $this->notification(get_string('environmenterrortodo', 'admin'), 'notifyproblem');
         }
 
         return $output;

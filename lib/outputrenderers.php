@@ -468,9 +468,7 @@ class core_renderer extends renderer_base {
 
         $output = '';
         if (isset($CFG->maintenance_later) and $CFG->maintenance_later > time()) {
-            $output .= $this->box_start('errorbox maintenancewarning');
-            $output .= get_string('maintenancemodeisscheduled', 'admin', (int)(($CFG->maintenance_later-time())/60));
-            $output .= $this->box_end();
+            $output .= $this->notification(get_string('maintenancemodeisscheduled', 'admin', (int)(($CFG->maintenance_later-time())/60)), 'notifyproblem');
         }
         return $output;
     }
@@ -2570,7 +2568,7 @@ EOD;
             $message .= '<p class="errormessage">' . get_string('installproblem', 'error') . '</p>';
             //It is usually not possible to recover from errors triggered during installation, you may need to create a new database or use a different database prefix for new installation.
         }
-        $output .= $this->box($message, 'errorbox', null, array('data-rel' => 'fatalerror'));
+        $output .= $this->notification($message, 'notifyproblem');
 
         if ($CFG->debugdeveloper) {
             if (!empty($debuginfo)) {
