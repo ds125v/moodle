@@ -47,6 +47,15 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
         return "<div class=\"$type\">$message</div>";
     }
 
+    public function alert_fatal($message, $moreinfourl, $duringinstall) {
+        $message = '<p class="errormessage">' . $message . '</p>'.
+                '<p class="alert-link"><a href="' . $moreinfourl . '">' . get_string('moreinformation') . '</a></p>';
+        if ($duringinstall) {
+            $message .= '<p class="errormessage">' . get_string('installproblem', 'error') . '</p>';
+        }
+        return '<div class="alert alert-danger" data-rel="fatalerror">' . $message . '</div>';
+    }
+
     /*
      * This renders the navbar.
      * Uses bootstrap compatible html.
