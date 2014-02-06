@@ -285,27 +285,21 @@
                     echo "</a></p>";
 
                 } else {
-                    $table = new html_table();
-                    $table->head = array($question->text);
-                    $table->align = array ("left");
 
-                    $contents = '<table cellpadding="15" width="100%">';
+                    $contents = '<table class="generaltable" width="100%">';
+                    $contents .= '<thead><tr><th colspan="2" class="header" style="text-align:left">'.$question->text.'</th></tr></thead>';
 
                     if ($aaa = survey_get_user_answers($survey->id, $question->id, $currentgroup, "sa.time ASC")) {
                         foreach ($aaa as $a) {
                             $contents .= "<tr>";
-                            $contents .= '<td class="fullnamecell">'.fullname($a).'</td>';
+                            $contents .= '<th class="fullnamecell">'.fullname($a).'</th>';
                             $contents .= '<td valign="top">'.$a->answer1.'</td>';
                             $contents .= "</tr>";
                         }
                     }
                     $contents .= "</table>";
 
-                    $table->data[] = array($contents);
-
-                    echo html_writer::table($table);
-
-                    echo $OUTPUT->spacer(array('height'=>30)); // should be done with CSS instead
+                    echo ($contents);
                 }
             }
         }

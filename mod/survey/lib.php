@@ -504,7 +504,7 @@ function survey_print_multi($question) {
     $strresponses  = get_string('responses', 'survey');
 
     echo $OUTPUT->heading($question->text, 3);
-    echo "\n<table width=\"90%\" cellpadding=\"4\" cellspacing=\"1\" border=\"0\" class=\"surveytable\">";
+    echo "\n<table width=\"90%\" cellpadding=\"4\" cellspacing=\"1\" border=\"0\" class=\"generaltable surveytable\">";
 
     $options = explode( ",", $question->options);
     $numoptions = count($options);
@@ -525,14 +525,14 @@ function survey_print_multi($question) {
         $P = "";
     }
 
-    echo "<tr class=\"smalltext\"><th scope=\"row\">$strresponses</th>";
+    echo "<thead><tr class=\"smalltext\"><th scope=\"row\">$strresponses</th>";
     echo "<th scope=\"col\" class=\"hresponse\">". get_string('notyetanswered', 'survey'). "</th>";
     while (list ($key, $val) = each ($options)) {
         echo "<th scope=\"col\" class=\"hresponse\">$val</th>\n";
     }
     echo "</tr>\n";
 
-    echo "<tr><th scope=\"col\" colspan=\"7\">$question->intro</th></tr>\n";
+    echo "<tr><th scope=\"col\" colspan=\"7\">$question->intro</th></tr></thead>\n";
 
     $subquestions = $DB->get_records_list("survey_questions", "id", explode(',', $question->multi));
 
