@@ -87,8 +87,8 @@ $ratingoptions->sort = $sqlsort;
 $rm = new rating_manager();
 $ratings = $rm->get_all_ratings_for_item($ratingoptions);
 if (!$ratings) {
-    $msg = get_string('noratings','rating');
-    echo html_writer::tag('div', $msg, array('class'=>'mdl-align'));
+    $msg = get_string('noratings', 'rating');
+    echo $OUTPUT->notification($msg, 'notifyproblem');
 } else {
     // To get the sort URL, copy the current URL and remove any previous sort
     $sorturl = new moodle_url($url);
