@@ -1050,6 +1050,42 @@ class html_writer {
     }
 
     /**
+     * Outputs an input tag with attributes
+     *
+     * @param array $attributes The tag attributes (array('class' => 'class1') etc.)
+     * @return string HTML fragment
+     */
+    public static function input(array $attributes = null) {
+        return self::empty_tag('input', $attributes);
+    }
+
+    /**
+     * Outputs an input tag with type=hidden and a name-value pair
+     *
+     * @param string $name The name of the hidden input
+     * @param string $value The value of the hidden input
+     * @return string HTML fragment
+     */
+    public static function hidden_input($name, $value) {
+        return self::input(array('type' => 'hidden', 'name' => $name, 'value' => $value));
+    }
+
+    /**
+     * Outputs a series of input tags with type=hidden and name, value pairs
+     * based on the contents of the given array
+     *
+     * @param array $params containing name, value pairs
+     * @return string HTML fragment
+     */
+    public static function hidden_inputs(array $params) {
+        $output = '';
+        foreach ($params as $name => $value) {
+            $output .= self::hidden_input($name, $value);
+        }
+        return $output;
+    }
+
+    /**
      * Outputs a tag, but only if the contents are not empty
      *
      * @param string $tagname The name of tag ('a', 'img', 'span' etc.)
@@ -1389,12 +1425,7 @@ class html_writer {
             unset($params[$key]);
         }
 
-        $output = '';
-        foreach ($params as $key => $value) {
-            $attributes = array('type'=>'hidden', 'name'=>$key, 'value'=>$value);
-            $output .= self::empty_tag('input', $attributes)."\n";
-        }
-        return $output;
+        return this::hidden_inputs($params);
     }
 
     /**
