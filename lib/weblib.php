@@ -2997,17 +2997,15 @@ class progress_bar {
         if (CLI_SCRIPT) {
             return; // Temporary solution for cli scripts.
         }
-        $widthplusborder = $this->width + 2;
         $htmlcode = <<<EOT
-        <div style="text-align:center;width:{$widthplusborder}px;clear:both;padding:0;margin:0 auto;">
-            <h2 id="status_{$this->html_id}" style="text-align: center;margin:0 auto"></h2>
-            <p id="time_{$this->html_id}"></p>
-            <div id="bar_{$this->html_id}" style="border-style:solid;border-width:1px;width:{$this->width}px;height:50px;">
-                <div id="progress_{$this->html_id}"
-                style="text-align:center;background:#FFCC66;width:4px;border:1px
-                solid gray;height:38px; padding-top:10px;">&nbsp;<span id="pt_{$this->html_id}"></span>
+        <div class="progress_bar_container">
+            <h2 id="status_{$this->html_id}"></h2>
+            <div class="progress" id="bar_{$this->html_id}">
+                <div class="progress-bar bar" id="progress_{$this->html_id}">
+                    <span id="pt_{$this->html_id}"></span>
                 </div>
             </div>
+            <p id="time_{$this->html_id}"></p>
         </div>
 EOT;
         flush();

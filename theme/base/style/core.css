@@ -1676,6 +1676,11 @@ a:hover .caret {
     border-top-color: #555;
 }
 
+.progress_bar_container {
+    width: 500px;
+    margin: 0 auto;
+    text-align: center;
+}
 /**
  * Bootstrap 2.3.2 progress bar css.
  * Required for none bootstrap theme.
