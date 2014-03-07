@@ -3001,7 +3001,8 @@ class progress_bar {
         <div class="progress_bar_container">
             <h2 id="status_{$this->html_id}"></h2>
             <div class="progress" id="bar_{$this->html_id}">
-                <div class="progress-bar bar" id="progress_{$this->html_id}">
+                <div class="progress-bar bar" role="progressbar" id="progress_{$this->html_id}"
+                    aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                     <span id="pt_{$this->html_id}"></span>
                 </div>
             </div>
